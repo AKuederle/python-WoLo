@@ -1,26 +1,62 @@
 import os
+import itertools
+from collections import namedtuple
+from multiprocessing.pool import ThreadPool
+import pickle
+
+
+class none(): # This exists to allow the use of None as paramter value in inputs
+    pass
 
 class Task():
     def __init__(self, *args, **kwargs):
         self.__args__ = args
         self.__kwargs__ = kwargs
+        self.before()
+        self.inputs = self.input()
+        self.outputs = self.output()
 
-    def _inputs_change(self):
-        inputs = self.input()
+    def before(self):
+        pass
+
+    def _check(self, para_list, old_values):
         changed = False
-        for dependecy in inputs:
-            old_value = self._lookup(dependecy.name)
-            if dependecy.changed(old_value) == True:
+        for para in para_list:
+            if para.name in old_values:
+                old_value = old_values[para.name]
+            else:
+                old_value = none
+            if para._log_value != old_value:
                 changed = True
         return changed
 
-    def _lookup(self, name):
-        return 1394446668.0
+    def _rebuild(self, para_list):
+        for para in para_list:
+            para._update()
+        return {para.name: para._log_value for para in para_list}
 
-    def _do(self, old_dependecies):
-        """ check dependecies and outputs --> run task --> check sucess """
+    def _run(self, log):
+        """ check dependecies and outputs --> run task --> check success """
+        inputs_changed = self._check(self.inputs, log.inputs)
+        outputs_changed = self._check(self.outputs, log.outputs)
+        print(self.__args__[0])
+        print("inputs changed: {}".format(inputs_changed))
+        print("outputs changed: {}".format(outputs_changed))
+        if inputs_changed is True or outputs_changed is True:
+            return self._rerun(log)
+        else:
+            success = True
+            return success, log
 
-        
+    def _rerun(self, log):
+        print("rerunning Task...")
+        self.report = self.action()
+        success = all(self.success())
+        if success is True:
+            # rebuild log. The log is always in the state of after the run!!
+            log = log._replace(inputs=self._rebuild(self.inputs))
+            log = log._replace(outputs=self._rebuild(self.outputs))
+        return success, log
 
 
 class Parameter():
@@ -32,18 +68,93 @@ class Parameter():
         else:
             self._log_value = value
 
-    def changed(self, old_value):
-        return not self._log_value == old_value
-
-        
+    def _update(self):
+        pass
 
 class File(Parameter):
     def __init__(self, filename, name=None):
         self.path = filename
         if name:
-            name = name
+            self.name = name
         else:
-            name = filename
-        self._mod_date = os.path.getmtime(self.path)
-        super().__init__(name=name, value=self.path, _log_value=self._mod_date)
+            self.name = filename
+        self._get_mod_date()
+        super().__init__(name=name, value=self.path, _log_value=[self.path, self._mod_date])
 
+    def _get_mod_date(self):
+        if os.path.isfile(self.path):
+            self._mod_date = os.path.getmtime(self.path)
+        else:
+            self._mod_date = None
+
+    def changed(self):
+        old_date = self._mod_date
+        self._get_mod_date()
+        return not old_date == self._mod_date
+
+    def _update(self):
+        self._get_mod_date()
+        super().__init__(name=self.name, value=self.path, _log_value=[self.path, self._mod_date])
+
+def _write_log(log):
+    pickle.dump(log, open(os.path.join(os.getcwd(), ".rac"), "wb"))
+
+def _read_log():
+    file = os.path.join(os.getcwd(), ".rac")
+    if os.path.isfile(file):
+        return pickle.load(open(os.path.join(os.getcwd(), ".rac"), "rb"))
+    else:
+        return None
+
+def run(workflow):
+    steps = workflow()
+    log = _read_log()
+    success, new_log = _run_tasks(steps, log, "main")
+    print(success)
+    _write_log(new_log)
+
+
+def _run_tasks(task_list, log, name=""):
+    if not log:
+        log = []
+    success = [True]  # needed so that first task runs
+    step_log_list = itertools.zip_longest(task_list, log)
+    for i, (step, task_log) in enumerate(step_log_list):
+        if success[-1] is not True:
+            break
+        if isinstance(step, (list, tuple)):
+            subtasklist = step
+            if not task_log:
+                task_log = []
+                log.append(task_log)
+            if all(isinstance(step, (list, tuple)) for step in subtasklist):
+                print("Entering parallel sublist at {}".format(i))
+                with ThreadPool(6) as p:
+                    list_success, list_log = zip(*p.starmap(lambda x, y: _run_tasks(x, y), itertools.zip_longest(subtasklist, task_log)))
+                    log[i] = list(list_log)
+                    success.append(all(list_success))
+            else:
+                list_success, list_log = _run_tasks(step, task_log, "sublist {}".format(i))
+                log[i] = list_log
+                success.append(list_success)
+                pass
+        else:
+            step_class = type(step).__name__
+            print("running {} at position {} in {}".format(step_class, i, name))
+            if not task_log:
+                task_log = TaskLog(task_class=step_class, inputs={}, outputs={})
+                log.append(task_log)
+                task_success, new_task_log = step._run(task_log)
+            elif not task_log.task_class == step_class:
+                print("Task {} at {} changed to {}.\nForce rerun...".format(task_log.task_class, i, step_class))
+                task_success, new_task_log = step._rerun(task_log)
+            else:
+                task_success, new_task_log = step._run(task_log)
+
+            log[i] = new_task_log
+            print("success: {}".format(task_success))
+            success.append(task_success)
+    return all(success), log
+
+
+TaskLog = namedtuple("TaskLog", ["task_class", "inputs", "outputs"])
