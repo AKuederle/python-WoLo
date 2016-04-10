@@ -72,12 +72,16 @@ class Parameter():
         pass
 
 class File(Parameter):
-    def __init__(self, filename, name=None):
-        self.path = filename
+    def __init__(self, path, name=None, autocreate=False):
+        self.path = path
+        self.base = os.path.basename(self.path)
+        self.dir = os.path.dirname(self.path)
         if name:
             self.name = name
         else:
-            self.name = filename
+            self.name = path
+        if autocreate is True and not os.path.isfile(self.path):
+            self._create()
         self._get_mod_date()
         super().__init__(name=name, value=self.path, _log_value=[self.path, self._mod_date])
 
@@ -91,6 +95,11 @@ class File(Parameter):
         old_date = self._mod_date
         self._get_mod_date()
         return not old_date == self._mod_date
+
+    def _create(self):
+        os.makedirs(self.dir, exist_ok=True)
+        open(self.path, 'a').close()
+
 
     def _update(self):
         self._get_mod_date()
