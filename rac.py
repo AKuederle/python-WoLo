@@ -3,6 +3,8 @@ import itertools
 from collections import namedtuple
 from multiprocessing.pool import ThreadPool
 import pickle
+import inspect
+import hashlib
 
 
 class none(): # This exists to allow the use of None as paramter value in inputs
@@ -83,7 +85,7 @@ class File(Parameter):
         if autocreate is True and not os.path.isfile(self.path):
             self._create()
         self._get_mod_date()
-        super().__init__(name=name, value=self.path, _log_value=[self.path, self._mod_date])
+        super().__init__(name=self.name, value=self.path, _log_value=[self.path, self._mod_date])
 
     def _get_mod_date(self):
         if os.path.isfile(self.path):
@@ -100,10 +102,32 @@ class File(Parameter):
         os.makedirs(self.dir, exist_ok=True)
         open(self.path, 'a').close()
 
-
     def _update(self):
         self._get_mod_date()
         super().__init__(name=self.name, value=self.path, _log_value=[self.path, self._mod_date])
+
+class Source(Parameter):
+    def __init__(self, object, name=None):
+        self.object = object
+        self._get_source()
+        if name:
+            self.name = name
+        else:
+            self.name = str(object)
+        super().__init__(name=self.name, value=self.source, _log_value=self.hash)
+
+    def _get_source(self):
+        self.source = inspect.getsource(self.object)
+        self.hash = hashlib.md5(self.source.encode('utf-8')).hexdigest()
+
+    def changed(self):
+        old_hash = self._hash
+        self._get_source()
+        return not old_hash == self._hash
+
+class Self(Source):
+    def __init__(self, Self):
+        super().__init__(object=Self.__class__, name="Self")
 
 def _write_log(log):
     pickle.dump(log, open(os.path.join(os.getcwd(), ".rac"), "wb"))
@@ -154,8 +178,9 @@ def _run_tasks(task_list, log, name=""):
                 task_log = TaskLog(task_class=step_class, inputs={}, outputs={})
                 log.append(task_log)
                 task_success, new_task_log = step._run(task_log)
-            elif not task_log.task_class == step_class:
-                print("Task {} at {} changed to {}.\nForce rerun...".format(task_log.task_class, i, step_class))
+            elif not hasattr(task_log, "task_class") or not task_log.task_class == step_class:
+                print("New Task {} at {}.\nForce rerun...".format(step_class, i))
+                task_log = TaskLog(task_class=step_class, inputs={}, outputs={})
                 task_success, new_task_log = step._rerun(task_log)
             else:
                 task_success, new_task_log = step._run(task_log)
