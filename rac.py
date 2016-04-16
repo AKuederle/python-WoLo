@@ -5,6 +5,7 @@ from multiprocessing.pool import ThreadPool
 import pickle
 import inspect
 import hashlib
+import subprocess
 
 
 class none(): # This exists to allow the use of None as paramter value in inputs
@@ -128,6 +129,12 @@ class Source(Parameter):
 class Self(Source):
     def __init__(self, Self):
         super().__init__(object=Self.__class__, name="Self")
+
+
+def cmd(*args, **kwargs):
+    return subprocess.check_output(*args, **kwargs)
+
+
 
 def _write_log(log):
     pickle.dump(log, open(os.path.join(os.getcwd(), ".rac"), "wb"))
