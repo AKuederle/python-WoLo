@@ -16,8 +16,8 @@ class Task():
         self.__args__ = args
         self.__kwargs__ = kwargs
         self.before()
-        self.inputs = self.input()
-        self.outputs = self.output()
+        self.inputs = self._process(self.input())
+        self.outputs = self._process(self.output())
 
     def before(self):
         pass
@@ -25,9 +25,15 @@ class Task():
     def test(self):
         pass
 
-    def _check(self, para_list, old_values):
+    def _process(self, para_list):
+        name_list = [para.name for para in para_list]
+        if not len(set(name_list)) == len(name_list):
+            raise Warning("Multiple Parameter have the same name! {}".format(name_list))
+        return {para.name: para for para in para_list}
+
+    def _check(self, para_dic, old_values):
         changed = False
-        for para in para_list:
+        for para in para_dic.values():
             if para.name in old_values:
                 old_value = old_values[para.name]
             else:
@@ -36,7 +42,8 @@ class Task():
                 changed = True
         return changed
 
-    def _rebuild(self, para_list):
+    def _rebuild(self, para_dic):
+        para_list = para_dic.values()
         for para in para_list:
             para._update()
         return {para.name: para._log_value for para in para_list}
@@ -78,14 +85,11 @@ class Parameter():
         pass
 
 class File(Parameter):
-    def __init__(self, path, name=None, autocreate=False):
+    def __init__(self, path, name, autocreate=False):
         self.path = path
         self.base = os.path.basename(self.path)
         self.dir = os.path.dirname(self.path)
-        if name:
-            self.name = name
-        else:
-            self.name = path
+        self.name = name
         if autocreate is True and not os.path.isfile(self.path):
             self._create()
         self._get_mod_date()
