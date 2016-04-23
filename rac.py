@@ -22,6 +22,9 @@ class Task():
     def before(self):
         pass
 
+    def test(self):
+        pass
+
     def _check(self, para_list, old_values):
         changed = False
         for para in para_list:
@@ -56,7 +59,7 @@ class Task():
         self.report = self.action()
         success = all(self.success())
         if success is True:
-            # rebuild log. The log is always in the state of after the run!!
+            # rebuild log. The log is only updated if the task ran succesfully
             log = log._replace(inputs=self._rebuild(self.inputs))
             log = log._replace(outputs=self._rebuild(self.outputs))
         return success, log
