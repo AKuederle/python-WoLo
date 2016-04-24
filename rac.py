@@ -1,7 +1,7 @@
 import os
 import itertools
 from collections import namedtuple
-from multiprocessing.pool import ThreadPool
+from multiprocessing.pool import Pool, ThreadPool
 import pickle
 import inspect
 import hashlib
@@ -52,7 +52,6 @@ class Task():
         """ check dependecies and outputs --> run task --> check success """
         inputs_changed = self._check(self.inputs, log.inputs)
         outputs_changed = self._check(self.outputs, log.outputs)
-        print(self.__args__[0])
         print("inputs changed: {}".format(inputs_changed))
         print("outputs changed: {}".format(outputs_changed))
         if inputs_changed is True or outputs_changed is True:
@@ -156,44 +155,52 @@ def _read_log():
 def run(workflow):
     steps = workflow()
     log = _read_log()
-    success, new_log = _run_tasks(steps, log, "main")
-    print(success)
+    success, new_log, _ = _run_tasks(steps, log)
     _write_log(new_log)
 
 
-def _run_tasks(task_list, log, name=""):
-    if not log:
+def _run_tasks(task_list, log, index=[]):
+    index.append(0)
+    if not isinstance(log, list):
         log = []
     success = [True]  # needed so that first task runs
-    step_log_list = itertools.zip_longest(task_list, log)
-    for i, (step, task_log) in enumerate(step_log_list):
+    for i, step, task_log in _cut_or_pad(task_list, log, enum=True):
+        index[-1] = i
+
+        # checks if the previous task ran successfully
         if success[-1] is not True:
             break
-        if isinstance(step, (list, tuple)):
+
+        if not task_log: # This might lead to a bug!!!!!!!!!!!!!! OR???????????
+            log.append(task_log)
+
+        if isinstance(step, (list, tuple)):  # checks if a step is actual a substep (list of steps)
             subtasklist = step
-            if not task_log:
+            # checks if current log is a list (as needed for subtasks). if not creates an empty one
+            if not isinstance(task_log, list):
                 task_log = []
-                log.append(task_log)
+
+            # checks if all elements in the subtask list are nested --> parallel run, otherwise linear run
             if all(isinstance(step, (list, tuple)) for step in subtasklist):
-                print("Entering parallel sublist at {}".format(i))
-                with ThreadPool(6) as p:
-                    list_success, list_log = zip(*p.starmap(lambda x, y: _run_tasks(x, y), itertools.zip_longest(subtasklist, task_log)))
-                    log[i] = list(list_log)
-                    success.append(all(list_success))
+                sub_index, subtasklist, task_log = zip(*_cut_or_pad(subtasklist, task_log, enum=True))
+                sub_index = list((index + ["p" + str(i)] for i in sub_index)) # some cleanup needed
+                with ThreadPool(4) as p:
+                    list_success, list_log, _ = zip(*p.starmap(_run_tasks_wrapper, zip(subtasklist, task_log, sub_index)))
+                log[i] = list(list_log)
+                success.append(all(list_success))
             else:
-                list_success, list_log = _run_tasks(step, task_log, "sublist {}".format(i))
+                list_success, list_log, index = _run_tasks(subtasklist, task_log, index)
                 log[i] = list_log
                 success.append(list_success)
-                pass
+
         else:
             step_class = type(step).__name__
-            print("running {} at position {} in {}".format(step_class, i, name))
-            if not task_log:
+            print(_pretty_print_index(index), step_class)
+            if not isinstance(task_log, TaskLog):
                 task_log = TaskLog(task_class=step_class, inputs={}, outputs={})
-                log.append(task_log)
                 task_success, new_task_log = step._run(task_log)
             elif not hasattr(task_log, "task_class") or not task_log.task_class == step_class:
-                print("New Task {} at {}.\nForce rerun...".format(step_class, i))
+                print("New Task {} at {}.\nForce rerun...".format(step_class, i)) # could be way easier if task name would be an input. Than i wouldn't have to check explicitly
                 task_log = TaskLog(task_class=step_class, inputs={}, outputs={})
                 task_success, new_task_log = step._rerun(task_log)
             else:
@@ -202,7 +209,30 @@ def _run_tasks(task_list, log, name=""):
             log[i] = new_task_log
             print("success: {}".format(task_success))
             success.append(task_success)
-    return all(success), log
+    index = index[:-1]
+    return all(success), log, index
+
+
+def _pretty_print_index(index):
+    return "".join(["[{}]".format(i) for i in index])
+
+
+def _cut_or_pad(master, slave, enum=False):
+    for i in range(len(master)):
+        try:
+            slave_val = slave[i]
+        except:
+            slave_val = None
+        if enum is True:
+            yield i, master[i], slave_val
+        else:
+            yield master[i], slave_val
+
+
+def _run_tasks_wrapper(subtasklist, task_log, sub_index):
+    '''Needed to make the starmap function work with Multiprocess. Called function as to be importable --> Lambda is not possible.
+    Therefore, this wrapper function exists'''
+    return _run_tasks(subtasklist, task_log, sub_index)
 
 
 TaskLog = namedtuple("TaskLog", ["task_class", "inputs", "outputs"])
