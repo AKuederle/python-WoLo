@@ -155,17 +155,16 @@ def _read_log():
 def run(workflow):
     steps = workflow()
     log = _read_log()
-    success, new_log, _ = _run_tasks(steps, log)
+    success, new_log = _run_tasks(steps, log)
     _write_log(new_log)
 
 
-def _run_tasks(task_list, log, index=[]):
-    index.append(0)
+def _run_tasks(task_list, log, level=[]):
     if not isinstance(log, list):
         log = []
     success = [True]  # needed so that first task runs
     for i, step, task_log in _cut_or_pad(task_list, log, enum=True):
-        index[-1] = i
+        index = level + [i]
 
         # checks if the previous task ran successfully
         if success[-1] is not True:
@@ -185,11 +184,11 @@ def _run_tasks(task_list, log, index=[]):
                 sub_index, subtasklist, task_log = zip(*_cut_or_pad(subtasklist, task_log, enum=True))
                 sub_index = list((index + ["p" + str(i)] for i in sub_index)) # some cleanup needed
                 with ThreadPool(4) as p:
-                    list_success, list_log, _ = zip(*p.starmap(_run_tasks_wrapper, zip(subtasklist, task_log, sub_index)))
+                    list_success, list_log = zip(*p.starmap(_run_tasks_wrapper, zip(subtasklist, task_log, sub_index)))
                 log[i] = list(list_log)
                 success.append(all(list_success))
             else:
-                list_success, list_log, index = _run_tasks(subtasklist, task_log, index)
+                list_success, list_log = _run_tasks(subtasklist, task_log, index)
                 log[i] = list_log
                 success.append(list_success)
 
@@ -209,8 +208,7 @@ def _run_tasks(task_list, log, index=[]):
             log[i] = new_task_log
             print("success: {}".format(task_success))
             success.append(task_success)
-    index = index[:-1]
-    return all(success), log, index
+    return all(success), log
 
 
 def _pretty_print_index(index):
