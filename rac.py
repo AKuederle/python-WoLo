@@ -8,7 +8,7 @@ import hashlib
 import subprocess
 
 
-class none(): # This exists to allow the use of None as paramter value in inputs
+class none(): # This exists to allow the use of None as parameter value in inputs
     pass
 
 class Task():
@@ -73,6 +73,42 @@ class Task():
             log = log._replace(outputs=self._rebuild(self.outputs))
         print(success)
         return success, log
+
+class Workflow():
+    def __init__(self, *args, **kwargs):
+        self._name = type(self).__name__
+        self.args = args
+        self.kwargs = kwargs
+        self._logfile = os.path.join(os.getcwd(), ".rac", ".{}".format(self._name))
+        self._create_logfile()
+        self.before()
+        self.tasklist = self.workflow()
+        self.log = _read_log()
+
+    def before(self):
+        pass
+
+    def after(self):
+        pass
+
+    def _create_logfile(self):
+        logdir = os.path.dirname(self._logfile)
+        os.makedirs(logdir, exist_ok=True)
+        open(self._logfile, 'a').close()
+
+    def _write_log(self):
+        pickle.dump(self.log, open(self._logfile, "wb"))
+
+    def _read_log(self):
+        if os.path.isfile(file):
+            return pickle.load(open(self._logfile, "rb"))
+        else:
+            return None
+
+    def run(self):
+        self.log = _read_log()
+        success, self.log = _run_tasks(self.tasklist, self.log)
+        self._write_log()
 
 
 class Parameter():
@@ -143,24 +179,6 @@ class Self(Source):
 
 def cmd(*args, **kwargs):
     return subprocess.check_output(*args, **kwargs)
-
-
-
-def _write_log(log):
-    pickle.dump(log, open(os.path.join(os.getcwd(), ".rac"), "wb"))
-
-def _read_log():
-    file = os.path.join(os.getcwd(), ".rac")
-    if os.path.isfile(file):
-        return pickle.load(open(os.path.join(os.getcwd(), ".rac"), "rb"))
-    else:
-        return None
-
-def run(workflow):
-    steps = workflow()
-    log = _read_log()
-    success, new_log = _run_tasks(steps, log)
-    _write_log(new_log)
 
 
 def _run_tasks(task_list, log, level=[]):
