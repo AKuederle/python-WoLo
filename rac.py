@@ -68,6 +68,7 @@ class Task():
             # rebuild log. The log is only updated if the task ran succesfully
             log = log._replace(inputs=self._rebuild(self.inputs))
             log = log._replace(outputs=self._rebuild(self.outputs))
+        print(success)
         return success, log
 
 
@@ -162,13 +163,9 @@ def run(workflow):
 def _run_tasks(task_list, log, level=[]):
     if not isinstance(log, list):
         log = []
-    success = [True]  # needed so that first task runs
+    success = False
     for i, step, task_log in _cut_or_pad(task_list, log, enum=True):
         index = level + [i]
-
-        # checks if the previous task ran successfully
-        if success[-1] is not True:
-            break
 
         if not task_log: # This might lead to a bug!!!!!!!!!!!!!! OR???????????
             log.append(task_log)
@@ -185,12 +182,12 @@ def _run_tasks(task_list, log, level=[]):
                 sub_index = list((index + ["p" + str(i)] for i in sub_index)) # some cleanup needed
                 with ThreadPool(4) as p:
                     list_success, list_log = zip(*p.starmap(_run_tasks_wrapper, zip(subtasklist, task_log, sub_index)))
-                log[i] = list(list_log)
-                success.append(all(list_success))
+                new_task_log = list(list_log)
+                task_success = all(list_success)
+
             else:
-                list_success, list_log = _run_tasks(subtasklist, task_log, index)
-                log[i] = list_log
-                success.append(list_success)
+                task_success, new_task_log = _run_tasks(subtasklist, task_log, index)
+
 
         else:
             step_class = type(step).__name__
@@ -204,11 +201,13 @@ def _run_tasks(task_list, log, level=[]):
                 task_success, new_task_log = step._rerun(task_log)
             else:
                 task_success, new_task_log = step._run(task_log)
-
-            log[i] = new_task_log
-            print("success: {}".format(task_success))
-            success.append(task_success)
-    return all(success), log
+        if task_success is False:
+            break
+        log[i] = new_task_log
+        # print("success: {}".format(task_success)) # has to be moved in class method
+    else:
+        success = True
+    return success, log
 
 
 def _pretty_print_index(index):
