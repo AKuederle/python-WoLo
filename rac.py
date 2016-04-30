@@ -16,7 +16,8 @@ class Task():
         self.__args__ = args
         self.__kwargs__ = kwargs
         self.before()
-        self.inputs = self._process(self.input())
+        self._name = type(self).__name__
+        self.inputs = self._process(self.input() + [Parameter("_name", self._name)])  # passes the class name as a secret background parameter
         self.outputs = self._process(self.output())
 
     def before(self):
@@ -49,7 +50,7 @@ class Task():
         return {para.name: para._log_value for para in para_list}
 
     def _run(self, log):
-        """ check dependecies and outputs --> run task --> check success """
+        """ check dependencies and outputs --> run task --> check success """
         inputs_changed = self._check(self.inputs, log.inputs)
         outputs_changed = self._check(self.outputs, log.outputs)
         print("inputs changed: {}".format(inputs_changed))
@@ -65,7 +66,7 @@ class Task():
         self.report = self.action()
         success = all(self.success())
         if success is True:
-            # rebuild log. The log is only updated if the task ran succesfully
+            # rebuild log. The log is only updated if the task ran successfully
             log = log._replace(inputs=self._rebuild(self.inputs))
             log = log._replace(outputs=self._rebuild(self.outputs))
         print(success)
@@ -192,15 +193,11 @@ def _run_tasks(task_list, log, level=[]):
         else:
             step_class = type(step).__name__
             print(_pretty_print_index(index), step_class)
+            # checks if current log is really a TaskLog object. if not create an empty one
             if not isinstance(task_log, TaskLog):
                 task_log = TaskLog(task_class=step_class, inputs={}, outputs={})
-                task_success, new_task_log = step._run(task_log)
-            elif not hasattr(task_log, "task_class") or not task_log.task_class == step_class:
-                print("New Task {} at {}.\nForce rerun...".format(step_class, i)) # could be way easier if task name would be an input. Than i wouldn't have to check explicitly
-                task_log = TaskLog(task_class=step_class, inputs={}, outputs={})
-                task_success, new_task_log = step._rerun(task_log)
-            else:
-                task_success, new_task_log = step._run(task_log)
+
+            task_success, new_task_log = step._run(task_log)
         if task_success is False:
             break
         log[i] = new_task_log
