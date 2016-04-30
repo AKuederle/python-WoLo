@@ -75,8 +75,13 @@ class Task():
         return success, log
 
 class Workflow():
-    def __init__(self, *args, **kwargs):
+    '''Scarfold class to build a workflow. One Workflow file per name! If no name specified, always the same logfile will be used.
+    Parameters will be passed through to use as global, but if name is same, workflowlog will be overwritten!!!'''
+
+    def __init__(self, name=None, *args, **kwargs):
         self._name = type(self).__name__
+        if name:
+            self._name ="{}_{}".format(self._name, name)
         self.args = args
         self.kwargs = kwargs
         self._logfile = os.path.join(os.getcwd(), ".rac", ".{}".format(self._name))
@@ -221,7 +226,6 @@ def _run_tasks(task_list, log, level=[]):
         if task_success is False:
             break
         log[i] = new_task_log
-        # print("success: {}".format(task_success)) # has to be moved in class method
     else:
         success = True
     return success, log
