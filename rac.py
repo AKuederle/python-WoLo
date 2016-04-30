@@ -13,11 +13,13 @@ class none(): # This exists to allow the use of None as paramter value in inputs
 
 class Task():
     def __init__(self, *args, **kwargs):
-        self.__args__ = args
-        self.__kwargs__ = kwargs
+        self.args = args
+        self.kwargs = kwargs
+        self._name = Parameter("_name", type(self).__name__)
+        self._args = Parameter("_args", self.args)
+        self._kwargs = Parameter("_kwargs", self.kwargs)
         self.before()
-        self._name = type(self).__name__
-        self.inputs = self._process(self.input() + [Parameter("_name", self._name)])  # passes the class name as a secret background parameter
+        self.inputs = self._process(self.input() + [self._name, self._args, self._kwargs])  # passes the class name and arguments as a secret background parameter
         self.outputs = self._process(self.output())
 
     def before(self):
