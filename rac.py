@@ -75,7 +75,7 @@ class Task():
         return success, log
 
 class Workflow():
-    '''Scarfold class to build a workflow. One Workflow file per name! If no name specified, always the same logfile will be used.
+    '''Scaffold class to build a workflow. One Workflow file per name! If no name specified, always the same logfile will be used.
     Parameters will be passed through to use as global, but if name is same, workflowlog will be overwritten!!!'''
 
     def __init__(self, name=None, *args, **kwargs):
@@ -88,7 +88,7 @@ class Workflow():
         self._create_logfile()
         self.before()
         self.tasklist = self.workflow()
-        self.log = _read_log()
+        self.log = self._read_log()
 
     def before(self):
         pass
@@ -105,13 +105,13 @@ class Workflow():
         pickle.dump(self.log, open(self._logfile, "wb"))
 
     def _read_log(self):
-        if os.path.isfile(file):
+        if os.path.isfile(self._logfile):
             return pickle.load(open(self._logfile, "rb"))
         else:
             return None
 
     def run(self):
-        self.log = _read_log()
+        self.log = self._read_log()
         success, self.log = _run_tasks(self.tasklist, self.log)
         self._write_log()
 
@@ -190,6 +190,7 @@ def _run_tasks(task_list, log, level=[]):
     if not isinstance(log, list):
         log = []
     success = False
+
     for i, step, task_log in _cut_or_pad(task_list, log, enum=True):
         index = level + [i]
 
@@ -214,7 +215,6 @@ def _run_tasks(task_list, log, level=[]):
             else:
                 task_success, new_task_log = _run_tasks(subtasklist, task_log, index)
 
-
         else:
             step_class = type(step).__name__
             print(_pretty_print_index(index), step_class)
@@ -223,11 +223,14 @@ def _run_tasks(task_list, log, level=[]):
                 task_log = TaskLog(task_class=step_class, inputs={}, outputs={})
 
             task_success, new_task_log = step._run(task_log)
+
         if task_success is False:
             break
         log[i] = new_task_log
+
     else:
         success = True
+
     return success, log
 
 
