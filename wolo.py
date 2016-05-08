@@ -84,7 +84,7 @@ class Workflow():
             self._name ="{}_{}".format(self._name, name)
         self.args = args
         self.kwargs = kwargs
-        self._logfile = os.path.join(os.getcwd(), ".rac", ".{}".format(self._name))
+        self._logfile = os.path.join(os.getcwd(), ".wolo", ".{}".format(self._name))
         self._create_logfile()
         self.before()
         self.tasklist = self.workflow()
