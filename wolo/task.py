@@ -8,7 +8,7 @@ from .helper import none
 class Task():
     """Provide a scaffold class for a Task.
 
-    To create a task a new class with this class a parent.
+    To create a task, create a new class with this class as parent.
     Your new class needs the following methods:
         - input : method must return a list of wolo-parameters. Reformatted inputs are stored in self.inputs
         - output : method must return a list of wolo-parameters. Reformatted outputs are stored in self.outputs

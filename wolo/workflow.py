@@ -6,8 +6,20 @@ from .helper import *
 
 
 class Workflow():
-    '''Scaffold class to build a workflow. One Workflow file per name! If no name specified, always the same logfile will be used.
-    Parameters will be passed through to use as global, but if name is same, workflowlog will be overwritten!!!'''
+    """Provide a Scaffold class to build a workflow.
+
+    To create a Workflow, create a new class with this class as parent.
+    Your new class needs the following methods:
+        - tasklist: method must return a ordered list of wolo.Task instances.
+    Furthermore, it can have the following methods:
+        - before : method contains code that need to be run before everything else in the workflow
+        - after : method contains code that run after everything else in the workflow
+
+    Notes:
+    A workflow can be ran using MyWorkflow().run(). However, you should specify a name for the workflow instance:
+    MyWorkflow("MyName").run()
+    For each workflow, there will be a logfile created with this name. Therefore, specify a name, if you use a workflow multiple times.
+    You can pass Parameter to the workflow instance. they are available as self.args and self.kwargs."""
 
     def __init__(self, name=None, *args, **kwargs):
         self._name = type(self).__name__
@@ -50,9 +62,10 @@ class Workflow():
         self._write_log()
 
 def _run_tasks(task_list, log, level=[]):
-    '''Run a list of tasks and return the log and success information.
+    """Run a list of tasks and return the log and success information.
 
-    This is the main function of the module. It is called by the Workflow.run() method. It automatically runs tasks, that can be run in parallel in MultiThreads.'''
+    This is the main function of the module. It is called by the Workflow.run() method. It automatically runs tasks, that can be run in parallel in MultiThreads.
+    """
     if not isinstance(log, list):
         log = []
     success = False
