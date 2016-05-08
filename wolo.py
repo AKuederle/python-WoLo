@@ -11,7 +11,49 @@ import subprocess
 class none(): # This exists to allow the use of None as parameter value in inputs
     pass
 
+
 class Task():
+    """Provide a scaffold class for a Task.
+
+    To create a task a new class with this class a parent.
+    Your new class needs the following methods:
+        - input : method must return a list of wolo-parameters. Reformatted inputs are stored in self.inputs
+        - output : method must return a list of wolo-parameters. Reformatted outputs are stored in self.outputs
+        - action : method that contains the action that the task should perform. The optional return parametes is stored in self.report
+        - success : method must return True or a list which evaluate to True for the Task to be considered successful
+    Furthermore, it can have the following methods:
+        - before : method contains code that need to be run before everything else in the tasks
+        - after : method contains code that run after everything else in the Task
+
+    Further notes:
+        All arguments passed to a custom Task are stored in self.args and self.kwargs
+
+    Example Task class:
+    import wolo
+    class MyTask(wolo.Task):
+        def before(self):
+            myfile = self.args[0]
+
+        def input(self):
+            file = wolo.File("myfile", "filepath")  # wolo.file returns an object with the file path as file.path and its mod date as __str()__
+            Self = wolo.Self(self) # gets the sourcecode of the Task itself as input
+            return [Self, file]
+
+        def action(self):
+            # do awesome stuff
+            return "Everything is great" # this will be stored in self.report
+
+        def output(self):
+            return [wolo.File("outfile", "fielpath")]
+
+        def success(self):
+            outputs_changed = self.outputs["outfile"].changed() # checks if output file changed
+            return [outputs_changed]
+
+        def after(self):
+            print(self.report) # print the action results
+    """
+
     def __init__(self, *args, **kwargs):
         self.args = args
         self.kwargs = kwargs
@@ -23,9 +65,11 @@ class Task():
         self.outputs = self._process(self.output())
 
     def before(self):
+        """Empty method, that can be overwritten by user. is called on initialization of a task."""
         pass
 
-    def test(self):
+    def after(self):
+        """Empty method, that can be overwritten by user. is called on initialization of a task."""
         pass
 
     def _process(self, para_list):
@@ -52,7 +96,7 @@ class Task():
         return {para.name: para._log_value for para in para_list}
 
     def _run(self, log):
-        """ check dependencies and outputs --> run task --> check success """
+        """Check dependencies and outputs --> run task --> check success."""
         inputs_changed = self._check(self.inputs, log.inputs)
         outputs_changed = self._check(self.outputs, log.outputs)
         print("inputs changed: {}".format(inputs_changed))
@@ -73,6 +117,7 @@ class Task():
             log = log._replace(outputs=self._rebuild(self.outputs))
         print(success)
         return success, log
+
 
 class Workflow():
     '''Scaffold class to build a workflow. One Workflow file per name! If no name specified, always the same logfile will be used.
@@ -128,7 +173,7 @@ class Parameter():
         pass
 
 class File(Parameter):
-    def __init__(self, path, name, autocreate=False):
+    def __init__(self, name, path, autocreate=False):
         self.path = path
         self.base = os.path.basename(self.path)
         self.dir = os.path.dirname(self.path)
@@ -186,6 +231,9 @@ def cmd(*args, **kwargs):
 
 
 def _run_tasks(task_list, log, level=[]):
+    '''Run a list of tasks and return the log and success information.
+
+    This is the main function of the module. It is called by the Workflow.run() method. It automatically runs tasks, that can be run in parallel in MultiThreads.'''
     if not isinstance(log, list):
         log = []
     success = False
@@ -234,10 +282,15 @@ def _run_tasks(task_list, log, level=[]):
 
 
 def _pretty_print_index(index):
+    '''Turn the index into a formated string which is shown a output'''
     return "".join(["[{}]".format(i) for i in index])
 
 
 def _cut_or_pad(master, slave, enum=False):
+    '''Return a ziped opjects with from two different length lists.
+
+    The slave list is either cut or padded with "None" to fit the length of master. If enum is set to True,
+    the index is also returned as part of the iterator.'''
     for i in range(len(master)):
         try:
             slave_val = slave[i]
