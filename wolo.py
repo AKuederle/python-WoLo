@@ -99,7 +99,6 @@ class Workflow():
     def _create_logfile(self):
         logdir = os.path.dirname(self._logfile)
         os.makedirs(logdir, exist_ok=True)
-        open(self._logfile, 'a').close()
 
     def _write_log(self):
         pickle.dump(self.log, open(self._logfile, "wb"))
