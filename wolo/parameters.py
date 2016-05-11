@@ -1,4 +1,4 @@
-import os
+from pathlib import Path
 import inspect
 import hashlib
 
@@ -33,18 +33,17 @@ class File(Parameter):
     Notes: The .changed() Method can be used to check if a the timestamp of a file is changed. This can be interesting in the success method.
     """
     def __init__(self, name, path, autocreate=False):
-        self.path = os.path.abspath(path)
-        self.base = os.path.basename(self.path)
-        self.dir = os.path.dirname(self.path)
+        self.path = Path(path)
+        self.parent = self.path.parent
         self.name = name
-        if autocreate is True and not os.path.isfile(self.path):
+        if autocreate is True and not self.path.is_file():
             self._create()
         self._mod_date = self._get_mod_date()
-        super().__init__(name=self.name, value=self.path, _log_value=[self.path, self._mod_date])
+        super().__init__(name=self.name, value=str(self.path), _log_value=[self.path, self._mod_date])
 
     def _get_mod_date(self):
-        if os.path.isfile(self.path):
-            mod_date = os.path.getmtime(self.path)
+        if self.path.is_file():
+            mod_date = self.path.stat().st_mtime
         else:
             mod_date = None
         return mod_date
@@ -54,8 +53,8 @@ class File(Parameter):
         return not self._mod_date == self._get_mod_date()
 
     def _create(self):
-        os.makedirs(self.dir, exist_ok=True)
-        open(self.path, 'a').close()
+        self.parent.mkdir(parents=True, exist_ok=True)
+        self.path.open('a').close()
 
     def _update(self):
         self._mod_date = self._get_mod_date()

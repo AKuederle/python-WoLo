@@ -36,6 +36,7 @@ class TestHelperFunctions(unittest.TestCase):
 
 import wolo.parameters as parameters
 import hashlib
+from pathlib import Path
 class TestParamterDefinitions(unittest.TestCase):
 
     def test_simple_parameter(self):
@@ -48,33 +49,33 @@ class TestParamterDefinitions(unittest.TestCase):
         exspected_log_value = 5
         self.assertEqual(test_parameter._log_value, exspected_log_value)
 
-    @mock.patch("wolo.parameters.os.path.isfile", side_effect=lambda x: True)
-    @mock.patch("wolo.parameters.os.path.getmtime", side_effect=lambda x: 11111)
-    @mock.patch("wolo.parameters.os.path.abspath", side_effect=lambda x: x)
-    def test_file_parameter(self, abspath_mock, getmtime_mock, isfile_mock):
+    @mock.patch("wolo.parameters.Path.is_file", side_effect=lambda: True)
+    @mock.patch("wolo.parameters.Path.stat")
+    def test_file_parameter(self, getmtime_mock, isfile_mock):
+        type(getmtime_mock.return_value).st_mtime = mock.PropertyMock(return_value=11111)
         test_file = parameters.File("test", "../test_dir/test")
         self.assertEqual(test_file.name, "test")
-        abspath_mock.assert_called_with("../test_dir/test")
-        self.assertEqual(test_file.value, "../test_dir/test")
-        self.assertEqual(test_file._log_value, ["../test_dir/test", 11111])
+        self.assertEqual(test_file.value, str(Path("../test_dir/test")))
+        self.assertEqual(test_file._log_value, [Path("../test_dir/test"), 11111])
 
-    @mock.patch("wolo.parameters.os.path.isfile", side_effect=lambda x: True)
-    @mock.patch("wolo.parameters.os.path.getmtime", side_effect=lambda x: 11111)
+    @mock.patch("wolo.parameters.Path.is_file", side_effect=lambda: True)
+    @mock.patch("wolo.parameters.Path.stat")
     def test_file_parameter_changed(self, getmtime_mock, isfile_mock):
+        type(getmtime_mock.return_value).st_mtime = mock.PropertyMock(return_value=11111)
         test_file = parameters.File("test", "../test_dir/test")
-        getmtime_mock.side_effect = lambda x: 22222
+        type(getmtime_mock.return_value).st_mtime = mock.PropertyMock(return_value=22222)
         self.assertEqual(test_file._get_mod_date(), 22222)
         self.assertTrue(test_file.changed())
 
-    @mock.patch("wolo.parameters.os.path.isfile", side_effect=lambda x: False)
-    @mock.patch("wolo.parameters.os.path.getmtime", side_effect=lambda x: 11111)
-    @mock.patch("wolo.parameters.os.path.abspath", side_effect=lambda x: x)
-    @mock.patch("wolo.parameters.os.makedirs")
-    @mock.patch("wolo.parameters.open")
-    def test_file_parameter_autocreate(self, open_mock, makedirs_mock, abspath_mock, getmtime_mock, isfile_mock):
+    @mock.patch("wolo.parameters.Path.is_file", side_effect=lambda: False)
+    @mock.patch("wolo.parameters.Path.stat")
+    @mock.patch("wolo.parameters.Path.mkdir")
+    @mock.patch("wolo.parameters.Path.open")
+    def test_file_parameter_autocreate(self, open_mock, makedirs_mock, getmtime_mock, isfile_mock):
+        getmtime_mock.st_mtime = 11111
         test_file = parameters.File("test", "../test_dir/test", autocreate=True)
-        makedirs_mock.assert_called_with("../test_dir", exist_ok=True)
-        open_mock.assert_called_with("../test_dir/test", 'a')
+        self.assertTrue(makedirs_mock.called)
+        self.assertTrue(open_mock.called)
 
     @mock.patch("wolo.parameters.inspect.getsource", side_effect=lambda x: x)
     def test_source_parameter(self, getsource_mock):
