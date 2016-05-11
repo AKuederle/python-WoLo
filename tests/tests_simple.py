@@ -63,7 +63,7 @@ class TestParamterDefinitions(unittest.TestCase):
     def test_file_parameter_changed(self, getmtime_mock, isfile_mock):
         test_file = parameters.File("test", "../test_dir/test")
         getmtime_mock.side_effect = lambda x: 22222
-        # self.assertEqual(test_file._get_mod_date(), True)
+        self.assertEqual(test_file._get_mod_date(), 22222)
         self.assertTrue(test_file.changed())
 
     @mock.patch("wolo.parameters.os.path.isfile", side_effect=lambda x: False)

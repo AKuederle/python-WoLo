@@ -19,6 +19,9 @@ class Parameter():
             self._log_value = value
 
     def _update(self):
+        """The update function is important for all Parameters, that can change during a run (like a outputfile).
+        It is called after the run, but before the Parameter values are saved, so that always the newest values are saved.
+        """
         pass
 
 class File(Parameter):
@@ -36,27 +39,26 @@ class File(Parameter):
         self.name = name
         if autocreate is True and not os.path.isfile(self.path):
             self._create()
-        self._get_mod_date()
+        self._mod_date = self._get_mod_date()
         super().__init__(name=self.name, value=self.path, _log_value=[self.path, self._mod_date])
 
     def _get_mod_date(self):
         if os.path.isfile(self.path):
-            self._mod_date = os.path.getmtime(self.path)
+            mod_date = os.path.getmtime(self.path)
         else:
-            self._mod_date = None
+            mod_date = None
+        return mod_date
 
     def changed(self):
         """Check if the timestamp is updated in between runs"""
-        old_date = self._mod_date
-        self._get_mod_date()
-        return not old_date == self._mod_date
+        return not self._mod_date == self._get_mod_date()
 
     def _create(self):
         os.makedirs(self.dir, exist_ok=True)
         open(self.path, 'a').close()
 
     def _update(self):
-        self._get_mod_date()
+        self._mod_date = self._get_mod_date()
         super().__init__(name=self.name, value=self.path, _log_value=[self.path, self._mod_date])
 
 class Source(Parameter):
@@ -68,7 +70,7 @@ class Source(Parameter):
     """
     def __init__(self, object, name=None):
         self.object = object
-        self._get_source()
+        self._hash = self._get_source()
         if name:
             self.name = name
         else:
@@ -76,14 +78,12 @@ class Source(Parameter):
         super().__init__(name=self.name, value=None, _log_value=self._hash)
 
     def _get_source(self):
-        self.source = inspect.getsource(self.object)
-        self._hash = hashlib.md5(self.source.encode('utf-8')).hexdigest()
+        source = inspect.getsource(self.object)
+        return hashlib.md5(source.encode('utf-8')).hexdigest()
 
     def changed(self):
         """Check if the source is updated in between runs"""
-        old_hash = self._hash
-        self._get_source()
-        return not old_hash == self._hash
+        return not self._hash == self._get_source()
 
 class Self(Source):
     """Special Parameter Class for the Sourcecode of the step definition. Can also be used to get the source of a class based on an instance.
