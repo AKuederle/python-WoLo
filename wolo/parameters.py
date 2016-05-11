@@ -73,11 +73,11 @@ class Source(Parameter):
             self.name = name
         else:
             self.name = str(object)
-        super().__init__(name=self.name, value=self.source, _log_value=self.hash)
+        super().__init__(name=self.name, value=None, _log_value=self._hash)
 
     def _get_source(self):
         self.source = inspect.getsource(self.object)
-        self.hash = hashlib.md5(self.source.encode('utf-8')).hexdigest()
+        self._hash = hashlib.md5(self.source.encode('utf-8')).hexdigest()
 
     def changed(self):
         """Check if the source is updated in between runs"""
