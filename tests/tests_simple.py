@@ -35,6 +35,7 @@ class TestHelperFunctions(unittest.TestCase):
         self.assertEqual(exspected_output, output)
 
 import wolo.parameters as parameters
+import hashlib
 class TestParamterDefinitions(unittest.TestCase):
 
     def test_simple_parameter(self):
@@ -63,7 +64,7 @@ class TestParamterDefinitions(unittest.TestCase):
         test_file = parameters.File("test", "../test_dir/test")
         getmtime_mock.side_effect = lambda x: 22222
         # self.assertEqual(test_file._get_mod_date(), True)
-        self.assertEqual(test_file.changed(), True)
+        self.assertTrue(test_file.changed())
 
     @mock.patch("wolo.parameters.os.path.isfile", side_effect=lambda x: False)
     @mock.patch("wolo.parameters.os.path.getmtime", side_effect=lambda x: 11111)
@@ -74,6 +75,24 @@ class TestParamterDefinitions(unittest.TestCase):
         test_file = parameters.File("test", "../test_dir/test", autocreate=True)
         makedirs_mock.assert_called_with("../test_dir", exist_ok=True)
         open_mock.assert_called_with("../test_dir/test", 'a')
+
+    @mock.patch("wolo.parameters.inspect.getsource", side_effect=lambda x: x)
+    def test_source_parameter(self, getsource_mock):
+        test_object = parameters.Source("this is a test")
+        getsource_mock.assert_called_with("this is a test")
+        self.assertEqual(test_object.name, "this is a test")
+        self.assertEqual(test_object._log_value, hashlib.md5("this is a test".encode('utf-8')).hexdigest())
+
+    @mock.patch("wolo.parameters.inspect.getsource", side_effect=lambda x: x)
+    def test_source_parameter_changed(self, getsource_mock):
+        test_object = parameters.Source("this is a test")
+        getsource_mock.side_effect = lambda x: "this is changed test"
+        self.assertTrue(test_object.changed())
+
+    @mock.patch("wolo.parameters.Source.__init__")
+    def test_self_paramter(self, source_mock):
+        test_object = parameters.Self(list())
+        source_mock.assert_called_with(object=list, name="Self")
 
 
 
