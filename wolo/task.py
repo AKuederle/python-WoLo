@@ -12,7 +12,7 @@ class Task():
     Your new class needs the following methods:
         - input : method must return a list of wolo-parameters. Reformatted inputs are stored in self.inputs
         - output : method must return a list of wolo-parameters. Reformatted outputs are stored in self.outputs
-        - action : method that contains the action that the task should perform. The optional return parametes is stored in self.report
+        - action : method that contains the action that the task should perform. The optional return parameter is stored in self.report
         - success : method must return True or a list which evaluate to True for the Task to be considered successful
     Furthermore, it can have the following methods:
         - before : method contains code that need to be run before everything else in the tasks

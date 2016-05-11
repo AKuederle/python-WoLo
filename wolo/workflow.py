@@ -19,7 +19,21 @@ class Workflow():
     A workflow can be ran using MyWorkflow().run(). However, you should specify a name for the workflow instance:
     MyWorkflow("MyName").run()
     For each workflow, there will be a logfile created with this name. Therefore, specify a name, if you use a workflow multiple times.
-    You can pass Parameter to the workflow instance. they are available as self.args and self.kwargs."""
+    You can pass Parameter to the workflow instance. They are available as self.args and self.kwargs.
+
+    Example Workflow:
+
+    class MyWorkflow(wolo.Workflow):
+        def before(self):
+            # Code that needs to run before everything else
+            self.myarg = self.arg[0]
+            self.myarg2 = self.arg[2]
+        def tasktree(self):
+            return [MyTask(self.myarg), MyTask2(self.myarg2)]
+        def after(self):
+            # print some logging information
+            
+    """
 
     def __init__(self, name=None, *args, **kwargs):
         self._name = type(self).__name__
