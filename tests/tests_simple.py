@@ -49,9 +49,11 @@ class TestParamterDefinitions(unittest.TestCase):
 
     @mock.patch("wolo.parameters.os.path.isfile", side_effect=lambda x: True)
     @mock.patch("wolo.parameters.os.path.getmtime", side_effect=lambda x: 11111)
-    def test_file_parameter(self, getmtime_mock, isfile_mock):
+    @mock.patch("wolo.parameters.os.path.abspath", side_effect=lambda x: x)
+    def test_file_parameter(self, abspath_mock, getmtime_mock, isfile_mock):
         test_file = parameters.File("test", "../test_dir/test")
         self.assertEqual(test_file.name, "test")
+        abspath_mock.assert_called_with("../test_dir/test")
         self.assertEqual(test_file.value, "../test_dir/test")
         self.assertEqual(test_file._log_value, ["../test_dir/test", 11111])
 
@@ -65,9 +67,10 @@ class TestParamterDefinitions(unittest.TestCase):
 
     @mock.patch("wolo.parameters.os.path.isfile", side_effect=lambda x: False)
     @mock.patch("wolo.parameters.os.path.getmtime", side_effect=lambda x: 11111)
+    @mock.patch("wolo.parameters.os.path.abspath", side_effect=lambda x: x)
     @mock.patch("wolo.parameters.os.makedirs")
     @mock.patch("wolo.parameters.open")
-    def test_file_parameter_autocreate(self, open_mock, makedirs_mock, getmtime_mock, isfile_mock):
+    def test_file_parameter_autocreate(self, open_mock, makedirs_mock, abspath_mock, getmtime_mock, isfile_mock):
         test_file = parameters.File("test", "../test_dir/test", autocreate=True)
         makedirs_mock.assert_called_with("../test_dir", exist_ok=True)
         open_mock.assert_called_with("../test_dir/test", 'a')

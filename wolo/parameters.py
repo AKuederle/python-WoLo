@@ -30,7 +30,7 @@ class File(Parameter):
     Notes: The .changed() Method can be used to check if a the timestamp of a file is changed. This can be interesting in the success method.
     """
     def __init__(self, name, path, autocreate=False):
-        self.path = path
+        self.path = os.path.abspath(path)
         self.base = os.path.basename(self.path)
         self.dir = os.path.dirname(self.path)
         self.name = name
