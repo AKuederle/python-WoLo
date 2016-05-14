@@ -6,8 +6,6 @@ os.chdir(os.path.dirname(__file__))
 sys.path.insert(0, os.path.abspath('..'))
 
 import wolo.helper as helper
-
-
 class TestHelperFunctions(unittest.TestCase):
 
     def test_pretty_print_index(self):
@@ -96,6 +94,23 @@ class TestParamterDefinitions(unittest.TestCase):
     def test_self_paramter(self, source_mock):
         test_object = parameters.Self(list())
         source_mock.assert_called_with(object=list, name="Self")
+
+
+import wolo.log as log
+class TetsLogObject(unittest.TestCase):
+    @mock.patch("wolo.log.pickle.load", side_effect=lambda x: x)
+    @mock.patch("wolo.parameters.Path.is_file", side_effect=lambda: True)
+    @mock.patch("wolo.parameters.Path.open", side_effect=lambda x: "test/path.rac")
+    def test_log_reading(self, open_mock, isfile_mock, load_mock):
+        test_log = log.Log(path="test/path.rac")
+        self.assertEqual(test_log.log, "test/path.rac")
+
+    @mock.patch("wolo.log.pickle.load", side_effect=lambda x: x)
+    @mock.patch("wolo.parameters.Path.is_file", side_effect=lambda: False)
+    def test_log_reading_empty(self, isfile_mock, load_mock):
+        test_log = log.Log(path="test/path.rac")
+        self.assertEqual(test_log.log, None)
+
 
 
 
