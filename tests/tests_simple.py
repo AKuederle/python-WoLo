@@ -98,6 +98,74 @@ class TestParamterDefinitions(unittest.TestCase):
         source_mock.assert_called_with(object=list, name="Self")
 
 
+import wolo.workflow as workflow
+
+class ExampleWorkflow(workflow.Workflow):
+    def tasktree(self):
+        pass
+
+class MockTask():
+    def __init__(self, success, name):
+        self.success = success
+        self.name = name
+    def _run(self, x):
+        return self.success, self.name
+
+
+class TestWorkflow(unittest.TestCase):
+    @mock.patch("wolo.workflow.Workflow._read_log")
+    @mock.patch("wolo.workflow.Workflow._create_logfile")
+    @mock.patch("wolo.workflow.Workflow.before")
+    def test_workflow_init(self, before_mock, create_mock, readlog_mock):
+        test_workflow = ExampleWorkflow(name="test")
+        self.assertEqual(test_workflow._name, "ExampleWorkflow_test")
+        self.assertTrue(before_mock.called)
+        self.assertTrue(create_mock.called)
+
+    def test_run_tasks_linear_empty_log(self):
+        tree = []
+        tree.append(MockTask(True, "0"))
+        tree.append(MockTask(True, "1"))
+        tree.append(MockTask(True, "2"))
+        tree.append(MockTask(True, "3"))
+        success, log = workflow._run_tasks(tree, None)
+        self.assertEqual(success, True)
+        self.assertEqual(log, ["0", "1", "2", "3"])
+
+    def test_run_tasks_linear_empty_log_fail(self):
+        tree = []
+        tree.append(MockTask(True, "0"))
+        tree.append(MockTask(True, "1"))
+        tree.append(MockTask(False, "2"))
+        tree.append(MockTask(True, "3"))
+        success, log = workflow._run_tasks(tree, None)
+        self.assertEqual(success, False)
+        self.assertEqual(log, ["0", "1", None])
+
+    def test_run_tasks_parallel_empty_log(self):
+        tree = []
+        tree.append(MockTask(True, "0"))
+        tree.append([MockTask(True, "1_0"), MockTask(True, "1_1")])
+        tree.append(MockTask(True, "2"))
+        success, log = workflow._run_tasks(tree, None)
+        self.assertEqual(success, True)
+        self.assertEqual(log, ["0", ["1_0", "1_1"], "2"])
+
+    def test_run_tasks_parallel_empty_log_fail(self):
+        tree = []
+        tree.append(MockTask(True, "0"))
+        tree.append([MockTask(True, "1_0"), MockTask(False, "1_1")])
+        tree.append(MockTask(True, "2"))
+        success, log = workflow._run_tasks(tree, None)
+        self.assertEqual(success, False)
+        self.assertEqual(log, ["0", ["1_0", ]])
+
+
+
+
+
+
+
 
 
 
@@ -110,4 +178,4 @@ class TestParamterDefinitions(unittest.TestCase):
 
 
 if __name__ == '__main__':
-    unittest.main()
+    unittest.main(buffer=True)

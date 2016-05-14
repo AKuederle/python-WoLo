@@ -32,7 +32,7 @@ class Workflow():
             return [MyTask(self.myarg), MyTask2(self.myarg2)]
         def after(self):
             # print some logging information
-            
+
     """
 
     def __init__(self, name=None, *args, **kwargs):
@@ -42,11 +42,10 @@ class Workflow():
         self.args = args
         self.kwargs = kwargs
         self._logfile = os.path.join(os.getcwd(), ".wolo", ".{}".format(self._name))
-        print(self._logfile, ...)
         self._create_logfile()
         self.before()
         self.tasklist = self.tasktree()
-        self.log = self._read_log()
+        self.log = self._read_log()  # do I need that? - Yes so that log is imidiattlz avaible
 
     def before(self):
         """Empty method, that can be overwritten by user. is called on initialization of a workflow."""
