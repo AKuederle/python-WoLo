@@ -39,7 +39,7 @@ class File(Parameter):
         if autocreate is True and not self.path.is_file():
             self._create()
         self._mod_date = self._get_mod_date()
-        super().__init__(name=self.name, value=str(self.path), _log_value=[self.path, self._mod_date])
+        super().__init__(name=self.name, value=str(self.path), _log_value=[str(self.path), self._mod_date])
 
     def _get_mod_date(self):
         if self.path.is_file():

@@ -56,7 +56,7 @@ class TestParamterDefinitions(unittest.TestCase):
         test_file = parameters.File("test", "../test_dir/test")
         self.assertEqual(test_file.name, "test")
         self.assertEqual(test_file.value, str(Path("../test_dir/test")))
-        self.assertEqual(test_file._log_value, [Path("../test_dir/test"), 11111])
+        self.assertEqual(test_file._log_value, [str(Path("../test_dir/test")), 11111])
 
     @mock.patch("wolo.parameters.Path.is_file", side_effect=lambda: True)
     @mock.patch("wolo.parameters.Path.stat")
