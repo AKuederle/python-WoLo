@@ -109,7 +109,7 @@ class MockTask():
         self.success = success
         self.name = name
     def _run(self, x):
-        return self.success, self.name
+        return helper.TaskLog(task_class=self.name, inputs={}, outputs={}, last_run_success=self.success)
 
 
 class TestWorkflow(unittest.TestCase):
@@ -128,9 +128,14 @@ class TestWorkflow(unittest.TestCase):
         tree.append(MockTask(True, "1"))
         tree.append(MockTask(True, "2"))
         tree.append(MockTask(True, "3"))
+        output = []
+        output.append(helper.TaskLog(task_class="0", inputs={}, outputs={}, last_run_success=True))
+        output.append(helper.TaskLog(task_class="1", inputs={}, outputs={}, last_run_success=True))
+        output.append(helper.TaskLog(task_class="2", inputs={}, outputs={}, last_run_success=True))
+        output.append(helper.TaskLog(task_class="3", inputs={}, outputs={}, last_run_success=True))
         success, log = workflow._run_tasks(tree, None)
         self.assertEqual(success, True)
-        self.assertEqual(log, ["0", "1", "2", "3"])
+        self.assertEqual(log, output)
 
     def test_run_tasks_linear_empty_log_fail(self):
         tree = []
@@ -138,27 +143,44 @@ class TestWorkflow(unittest.TestCase):
         tree.append(MockTask(True, "1"))
         tree.append(MockTask(False, "2"))
         tree.append(MockTask(True, "3"))
+        output = []
+        output.append(helper.TaskLog(task_class="0", inputs={}, outputs={}, last_run_success=True))
+        output.append(helper.TaskLog(task_class="1", inputs={}, outputs={}, last_run_success=True))
+        output.append(helper.TaskLog(task_class="2", inputs={}, outputs={}, last_run_success=False))
         success, log = workflow._run_tasks(tree, None)
         self.assertEqual(success, False)
-        self.assertEqual(log, ["0", "1", None])
+        self.assertEqual(log, output)
 
     def test_run_tasks_parallel_empty_log(self):
         tree = []
         tree.append(MockTask(True, "0"))
         tree.append([MockTask(True, "1_0"), MockTask(True, "1_1")])
         tree.append(MockTask(True, "2"))
+        output = []
+        output.append(helper.TaskLog(task_class="0", inputs={}, outputs={}, last_run_success=True))
+        sublist = []
+        sublist.append(helper.TaskLog(task_class="1_0", inputs={}, outputs={}, last_run_success=True))
+        sublist.append(helper.TaskLog(task_class="1_1", inputs={}, outputs={}, last_run_success=True))
+        output.append(sublist)
+        output.append(helper.TaskLog(task_class="2", inputs={}, outputs={}, last_run_success=True))
         success, log = workflow._run_tasks(tree, None)
         self.assertEqual(success, True)
-        self.assertEqual(log, ["0", ["1_0", "1_1"], "2"])
+        self.assertEqual(log, output)
 
     def test_run_tasks_parallel_empty_log_fail(self):
         tree = []
         tree.append(MockTask(True, "0"))
         tree.append([MockTask(True, "1_0"), MockTask(False, "1_1")])
         tree.append(MockTask(True, "2"))
+        output = []
+        output.append(helper.TaskLog(task_class="0", inputs={}, outputs={}, last_run_success=True))
+        sublist = []
+        sublist.append(helper.TaskLog(task_class="1_0", inputs={}, outputs={}, last_run_success=True))
+        sublist.append(helper.TaskLog(task_class="1_1", inputs={}, outputs={}, last_run_success=False))
+        output.append(sublist)
         success, log = workflow._run_tasks(tree, None)
         self.assertEqual(success, False)
-        self.assertEqual(log, ["0", ["1_0", ]])
+        self.assertEqual(log, output)
 
 
 

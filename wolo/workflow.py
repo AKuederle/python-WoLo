@@ -112,13 +112,14 @@ def _run_tasks(task_list, log, level=[]):
             print(pretty_print_index(index), step_class)
             # checks if current log is really a TaskLog object. if not create an empty one
             if not isinstance(task_log, TaskLog):
-                task_log = TaskLog(task_class=step_class, inputs={}, outputs={})
+                task_log = TaskLog(task_class=step_class, inputs={}, outputs={}, last_run_success=False)
 
-            task_success, new_task_log = step._run(task_log)
+            new_task_log = step._run(task_log)
+            task_success = new_task_log.last_run_success
 
+        log[i] = new_task_log
         if task_success is False:
             break
-        log[i] = new_task_log
 
     else:
         success = True
