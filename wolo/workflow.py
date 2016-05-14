@@ -123,6 +123,8 @@ def _run_tasks(task_list, log, level=[]):
 
     else:
         success = True
+        # This crops the log of tasks, that were removed from the tasktree
+        log = log[:i+1]
 
     return success, log
 
