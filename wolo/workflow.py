@@ -32,7 +32,7 @@ class Workflow():
             return [MyTask(self.myarg), MyTask2(self.myarg2)]
         def after(self):
             # print some logging information
-            
+
     """
 
     def __init__(self, name=None, *args, **kwargs):
@@ -42,11 +42,10 @@ class Workflow():
         self.args = args
         self.kwargs = kwargs
         self._logfile = os.path.join(os.getcwd(), ".wolo", ".{}".format(self._name))
-        print(self._logfile, ...)
         self._create_logfile()
         self.before()
         self.tasklist = self.tasktree()
-        self.log = self._read_log()
+        self.log = self._read_log()  # do I need that? - Yes so that log is imidiattlz avaible
 
     def before(self):
         """Empty method, that can be overwritten by user. is called on initialization of a workflow."""
@@ -113,16 +112,19 @@ def _run_tasks(task_list, log, level=[]):
             print(pretty_print_index(index), step_class)
             # checks if current log is really a TaskLog object. if not create an empty one
             if not isinstance(task_log, TaskLog):
-                task_log = TaskLog(task_class=step_class, inputs={}, outputs={})
+                task_log = TaskLog(task_class=step_class, inputs={}, outputs={}, last_run_success=False)
 
-            task_success, new_task_log = step._run(task_log)
+            new_task_log = step._run(task_log)
+            task_success = new_task_log.last_run_success
 
+        log[i] = new_task_log
         if task_success is False:
             break
-        log[i] = new_task_log
 
     else:
         success = True
+        # This crops the log of tasks, that were removed from the tasktree
+        log = log[:i+1]
 
     return success, log
 

@@ -94,11 +94,10 @@ class Task():
         outputs_changed = self._check(self.outputs, log.outputs)
         print("inputs changed: {}".format(inputs_changed))
         print("outputs changed: {}".format(outputs_changed))
-        if inputs_changed is True or outputs_changed is True:
+        if inputs_changed is True or outputs_changed is True or log.last_run_success is False:
             return self._rerun(log)
         else:
-            success = True
-            return success, log
+            return log
 
     def _rerun(self, log):
         print("rerunning Task...")
@@ -108,14 +107,14 @@ class Task():
             # rebuild log. The log is only updated if the task ran successfully
             log = log._replace(inputs=self._rebuild(self.inputs))
             log = log._replace(outputs=self._rebuild(self.outputs))
+            log = log._replace(last_run_success=True)
+        else:
+            log = log._replace(last_run_success=False)
         print(success)
-        return success, log
+        return log
 
 
 
 
 def cmd(*args, **kwargs):  # need to figure out where to put this
     return subprocess.check_output(*args, **kwargs)
-
-
-
