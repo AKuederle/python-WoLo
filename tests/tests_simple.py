@@ -2,12 +2,14 @@ import unittest
 import unittest.mock as mock
 import os
 import sys
+os.chdir(os.path.dirname(__file__))
 sys.path.insert(0, os.path.abspath('..'))
 
 import wolo.helper as helper
 
+
 class TestHelperFunctions(unittest.TestCase):
-    
+
     def test_pretty_print_index(self):
         test_index = (1, 4, "p3", 3)
         exspected_output = "[1][4][p3][3]"
@@ -15,21 +17,21 @@ class TestHelperFunctions(unittest.TestCase):
         self.assertEqual(output, exspected_output)
 
     def test_cut_or_pad_without_master_longer(self):
-        test_master = range(0,5)
+        test_master = range(0, 5)
         test_slave = test_master[:-2]
         exspected_output = [(0, 0), (1, 1), (2, 2), (3, None), (4, None)]
         output = list(helper.cut_or_pad(test_master, test_slave))
         self.assertEqual(exspected_output, output)
 
     def test_cut_or_pad_without_master_shorter(self):
-        test_slave = range(0,5)
+        test_slave = range(0, 5)
         test_master = test_slave[:-2]
         exspected_output = [(0, 0), (1, 1), (2, 2)]
         output = list(helper.cut_or_pad(test_master, test_slave))
         self.assertEqual(exspected_output, output)
 
     def test_cut_or_pad_without_enum(self):
-        test_master = test_slave = range(1,4)
+        test_master = test_slave = range(1, 4)
         exspected_output = [(0, 1, 1), (1, 2, 2), (2, 3, 3)]
         output = list(helper.cut_or_pad(test_master, test_slave, enum=True))
         self.assertEqual(exspected_output, output)
