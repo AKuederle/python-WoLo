@@ -4,18 +4,23 @@ import pickle
 
 class Log():
     """Wolo will create all the logs is a subfolder of the current working dir called .wolo.
-    Be aware, that zou have to call the workflow file from the same working directory everytime
+    Be aware, that you have to call the workflow file from the same working directory every time
     """
     def __init__(self, name):
         self._log_dic = Path.cwd() / ".wolo"
-        if not self._log_dic.is_dir():
-            self._log_dic.mkdir(parents=True)
         self._log_path = self._log_dic / ".{}".format(name)
-        self.log = self._load()
+        self._log = None
 
-    def update(self):
-        self.log = self._load()
-        return self
+    @property
+    def log(self):
+        if not self._log:
+            self._log = self._load()
+        return self._log
+
+    @log.setter
+    def log(self, new_log):
+        self._log = new_log
+        self._write()
 
     def _load(self):
         if self._log_path.is_file():
@@ -24,7 +29,8 @@ class Log():
             return None
 
     def _write(self):
-        pickle.dump(self.log, self._log_path.open("wb"))
+        self._log_dic.mkdir(parents=True, exist_ok=True)
+        pickle.dump(self._log, self._log_path.open("wb"))
 
 
 class View():

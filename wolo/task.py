@@ -3,7 +3,6 @@ import subprocess
 from .parameters import Parameter
 
 
-
 class Task():
     """Provide a scaffold class for a Task.
 
@@ -110,8 +109,6 @@ class Task():
             log = log._replace(last_run_success=False)
         print(success)
         return log
-
-
 
 
 def cmd(*args, **kwargs):  # need to figure out where to put this

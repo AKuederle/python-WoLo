@@ -54,10 +54,8 @@ class Workflow():
 
     def run(self):
         """Run all the tasks returned by the self.tasktree() method."""
-        self.log = self.log.update()
         success, self.log.log = _run_tasks(self.tasklist, self.log.log)
         print(success)
-        self.log._write()
 
 def _run_tasks(task_list, log, level=[]):
     """Run a list of tasks and return the log and success information.
