@@ -1,14 +1,13 @@
 import unittest
 import unittest.mock as mock
 import os
+from pathlib import Path
 import sys
 from copy import deepcopy
 os.chdir(os.path.dirname(__file__))
 sys.path.insert(0, os.path.abspath('..'))
 
 import wolo.helper as helper
-
-
 class TestHelperFunctions(unittest.TestCase):
 
     def test_pretty_print_index(self):
@@ -114,15 +113,13 @@ class MockTask():
 
 
 class TestWorkflow(unittest.TestCase):
-    maxDiff = None
-    @mock.patch("wolo.workflow.Workflow._read_log")
-    @mock.patch("wolo.workflow.Workflow._create_logfile")
     @mock.patch("wolo.workflow.Workflow.before")
-    def test_workflow_init(self, before_mock, create_mock, readlog_mock):
+    @mock.patch("wolo.workflow.Log.__init__", return_value=None)
+    def test_workflow_init(self, log_mock, before_mock):
         test_workflow = ExampleWorkflow(name="test")
         self.assertEqual(test_workflow._name, "ExampleWorkflow_test")
+        self.assertTrue(log_mock.called)
         self.assertTrue(before_mock.called)
-        self.assertTrue(create_mock.called)
 
     def test_run_tasks_linear_empty_log(self):
         tree = []
@@ -390,7 +387,44 @@ class TestWorkflow(unittest.TestCase):
         self.assertEqual(log, out_log)
 
 
+import wolo.log as log
+class TetsLogObject(unittest.TestCase):
+    @mock.patch("wolo.log.Path.cwd", return_value=Path("test"))
+    def test_log_init(self, cwd_mock):
+        test_log = log.Log(name="test")
+        self.assertEqual(test_log._log_path, Path("test/.wolo/.test"))
 
+    @mock.patch("wolo.log.Path.cwd", return_value=Path("test"))
+    @mock.patch("wolo.log.Log._load", return_value="test")
+    def test_log_getting_from_file(self, load_mock, cwd_mock):
+        test_log = log.Log(name="test")
+        test_log.log
+        self.assertTrue(load_mock.called)
+
+    @mock.patch("wolo.log.Path.cwd", return_value=Path("test"))
+    @mock.patch("wolo.log.Log._load", return_value="test")
+    def test_log_getting(self, load_mock, cwd_mock):
+        test_log = log.Log(name="test")
+        test_log._log = "test2"
+        test_log.log
+        self.assertFalse(load_mock.called)
+
+    @mock.patch("wolo.log.Path.cwd", return_value=Path("test"))
+    @mock.patch("wolo.log.Log._write")
+    def test_log_writing(self, write_mock, cwd_mock):
+        test_log = log.Log(name="test")
+        test_log.log = "test2"
+        self.assertEqual(test_log._log, "test2")
+        self.assertTrue(write_mock.called)
+
+
+
+    # @mock.patch("wolo.log.pickle.load", side_effect=lambda x: x)
+    # @mock.patch("wolo.log.Path.is_file", side_effect=lambda: False)
+    # @mock.patch("wolo.log.Path.mkdir")
+    # def test_log_reading_empty(self, makedirs_mock, isfile_mock, load_mock):
+    #     test_log = log.Log(name="test/path.rac")
+    #     self.assertEqual(test_log.log, None)
 
 
 

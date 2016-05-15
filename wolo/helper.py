@@ -21,6 +21,3 @@ def cut_or_pad(master, slave, enum=False):
             yield master[i], slave_val
 
 TaskLog = namedtuple("TaskLog", ["task_class", "inputs", "outputs", "last_run_success"])
-
-class none(): # This exists to allow the use of None as parameter value in inputs
-    pass

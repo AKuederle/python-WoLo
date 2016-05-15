@@ -1,8 +1,7 @@
 from multiprocessing.pool import Pool, ThreadPool
-import os
-import pickle
 
 from .helper import *
+from .log import Log
 
 
 class Workflow():
@@ -41,11 +40,9 @@ class Workflow():
             self._name = "{}_{}".format(self._name, name)
         self.args = args
         self.kwargs = kwargs
-        self._logfile = os.path.join(os.getcwd(), ".wolo", ".{}".format(self._name))
-        self._create_logfile()
         self.before()
+        self.log = Log(self._name)
         self.tasklist = self.tasktree()
-        self.log = self._read_log()  # do I need that? - Yes so that log is imidiattlz avaible
 
     def before(self):
         """Empty method, that can be overwritten by user. is called on initialization of a workflow."""
@@ -55,24 +52,10 @@ class Workflow():
         """Empty method, that can be overwritten by user. is called on initialization of a workflow."""
         pass
 
-    def _create_logfile(self):
-        logdir = os.path.dirname(self._logfile)
-        os.makedirs(logdir, exist_ok=True)
-
-    def _write_log(self):
-        pickle.dump(self.log, open(self._logfile, "wb"))
-
-    def _read_log(self):
-        if os.path.isfile(self._logfile):
-            return pickle.load(open(self._logfile, "rb"))
-        else:
-            return None
-
     def run(self):
         """Run all the tasks returned by the self.tasktree() method."""
-        self.log = self._read_log()
-        success, self.log = _run_tasks(self.tasklist, self.log)
-        self._write_log()
+        success, self.log.log = _run_tasks(self.tasklist, self.log.log)
+        print(success)
 
 def _run_tasks(task_list, log, level=[]):
     """Run a list of tasks and return the log and success information.

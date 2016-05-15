@@ -58,7 +58,7 @@ class File(Parameter):
 
     def _update(self):
         self._mod_date = self._get_mod_date()
-        super().__init__(name=self.name, value=self.path, _log_value=[self.path, self._mod_date])
+        super().__init__(name=self.name, value=self.path, _log_value=[str(self.path), self._mod_date])
 
 class Source(Parameter):
     """Special Parameter Class for sourcecode. It uses a hashvalue of the source to check if it changed.
