@@ -1,7 +1,6 @@
 from pathlib import Path
 import pickle
-
-from .helper import flatten_log, recursive_iterate_log
+from collections import namedtuple
 
 
 class Log():
@@ -50,8 +49,28 @@ class View():
     @property
     def flat(self):
         if not self._flattened:
-            self._flattened = flatten_log(self.log)
+            self._flattened = _flatten_log(self.log)
         return self._flattened
 
     def simple_tree(self, formatter=lambda x: x.task_class):
-        return list(recursive_iterate_log(self.log, formatter))
+        return list(_recursive_iterate_log(self.log, formatter))
+
+
+def _flatten_log(L):
+    """Flattens a nested log"""
+    for i in L:
+        if isinstance(i, TaskLog):
+            yield i
+        else:
+            yield from _flatten_log(i)
+
+
+def _recursive_iterate_log(L, func):
+    for i in L:
+        if isinstance(i, TaskLog):
+            yield func(i)
+        else:
+            yield list(_recursive_iterate_log(i, func))
+
+TaskLog = namedtuple("TaskLog", ["index", "task_class", "inputs", "outputs", "last_run_success"])
+TaskLog.__new__.__defaults__ = ((), None, {}, {}, False)

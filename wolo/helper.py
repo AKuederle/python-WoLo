@@ -1,4 +1,4 @@
-from collections import namedtuple
+
 
 def pretty_print_index(index):
     '''Turn the index into a formated string which is shown a output'''
@@ -19,23 +19,3 @@ def cut_or_pad(master, slave, enum=False):
             yield i, master[i], slave_val
         else:
             yield master[i], slave_val
-
-
-def flatten_log(L):
-    """Flattens a nested log"""
-    for i in L:
-        if isinstance(i, TaskLog):
-            yield i
-        else:
-            yield from flatten_log(i)
-
-def recursive_iterate_log(L, func):
-    for i in L:
-        if isinstance(i, TaskLog):
-            yield func(i)
-        else:
-            yield list(recursive_iterate_log(i, func))
-
-
-TaskLog = namedtuple("TaskLog", ["index", "task_class", "inputs", "outputs", "last_run_success"])
-TaskLog.__new__.__defaults__ = ((), None, {}, {}, False)

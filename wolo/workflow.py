@@ -1,7 +1,7 @@
 from multiprocessing.pool import Pool, ThreadPool
 
 from .helper import *
-from .log import Log
+from .log import Log, TaskLog
 
 
 class Workflow():

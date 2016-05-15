@@ -99,17 +99,21 @@ class TestParamterDefinitions(unittest.TestCase):
 
 
 import wolo.workflow as workflow
+import wolo.log as log
+
 
 class ExampleWorkflow(workflow.Workflow):
     def tasktree(self):
         pass
 
+
 class MockTask():
     def __init__(self, success, name):
         self.success = success
         self.name = name
+
     def _run(self, x):
-        return helper.TaskLog(index=[], task_class=self.name, last_run_success=self.success)
+        return log.TaskLog(index=[], task_class=self.name, last_run_success=self.success)
 
 
 class TestWorkflow(unittest.TestCase):
@@ -128,13 +132,13 @@ class TestWorkflow(unittest.TestCase):
         tree.append(MockTask(True, "2"))
         tree.append(MockTask(True, "3"))
         output = []
-        output.append(helper.TaskLog(index=[0], task_class="0", last_run_success=True))
-        output.append(helper.TaskLog(index=[1], task_class="1", last_run_success=True))
-        output.append(helper.TaskLog(index=[2], task_class="2", last_run_success=True))
-        output.append(helper.TaskLog(index=[3], task_class="3", last_run_success=True))
-        success, log = workflow._run_tasks(tree, None)
+        output.append(log.TaskLog(index=[0], task_class="0", last_run_success=True))
+        output.append(log.TaskLog(index=[1], task_class="1", last_run_success=True))
+        output.append(log.TaskLog(index=[2], task_class="2", last_run_success=True))
+        output.append(log.TaskLog(index=[3], task_class="3", last_run_success=True))
+        success, task_log = workflow._run_tasks(tree, None)
         self.assertEqual(success, True)
-        self.assertEqual(log, output)
+        self.assertEqual(task_log, output)
 
     def test_run_tasks_linear_empty_log_fail(self):
         tree = []
@@ -143,12 +147,12 @@ class TestWorkflow(unittest.TestCase):
         tree.append(MockTask(False, "2"))
         tree.append(MockTask(True, "3"))
         output = []
-        output.append(helper.TaskLog(index=[0], task_class="0", last_run_success=True))
-        output.append(helper.TaskLog(index=[1], task_class="1", last_run_success=True))
-        output.append(helper.TaskLog(index=[2], task_class="2", last_run_success=False))
-        success, log = workflow._run_tasks(tree, None)
+        output.append(log.TaskLog(index=[0], task_class="0", last_run_success=True))
+        output.append(log.TaskLog(index=[1], task_class="1", last_run_success=True))
+        output.append(log.TaskLog(index=[2], task_class="2", last_run_success=False))
+        success, task_log = workflow._run_tasks(tree, None)
         self.assertEqual(success, False)
-        self.assertEqual(log, output)
+        self.assertEqual(task_log, output)
 
     def test_run_tasks_parallel_tasks_empty_log(self):
         tree = []
@@ -156,15 +160,15 @@ class TestWorkflow(unittest.TestCase):
         tree.append([MockTask(True, "1_0"), MockTask(True, "1_1")])
         tree.append(MockTask(True, "2"))
         output = []
-        output.append(helper.TaskLog(index=[0], task_class="0", last_run_success=True))
+        output.append(log.TaskLog(index=[0], task_class="0", last_run_success=True))
         sublist = []
-        sublist.append(helper.TaskLog(index=[1, 0], task_class="1_0", last_run_success=True))
-        sublist.append(helper.TaskLog(index=[1, 1], task_class="1_1", last_run_success=True))
+        sublist.append(log.TaskLog(index=[1, 0], task_class="1_0", last_run_success=True))
+        sublist.append(log.TaskLog(index=[1, 1], task_class="1_1", last_run_success=True))
         output.append(sublist)
-        output.append(helper.TaskLog(index=[2], task_class="2", last_run_success=True))
-        success, log = workflow._run_tasks(tree, None)
+        output.append(log.TaskLog(index=[2], task_class="2", last_run_success=True))
+        success, task_log = workflow._run_tasks(tree, None)
         self.assertEqual(success, True)
-        self.assertEqual(log, output)
+        self.assertEqual(task_log, output)
 
     def test_run_tasks_parallel_tasks_empty_log_fail(self):
         tree = []
@@ -172,14 +176,14 @@ class TestWorkflow(unittest.TestCase):
         tree.append([MockTask(True, "1_0"), MockTask(False, "1_1")])
         tree.append(MockTask(True, "2"))
         output = []
-        output.append(helper.TaskLog(index=[0], task_class="0", last_run_success=True))
+        output.append(log.TaskLog(index=[0], task_class="0", last_run_success=True))
         sublist = []
-        sublist.append(helper.TaskLog(index=[1, 0], task_class="1_0", last_run_success=True))
-        sublist.append(helper.TaskLog(index=[1, 1], task_class="1_1", last_run_success=False))
+        sublist.append(log.TaskLog(index=[1, 0], task_class="1_0", last_run_success=True))
+        sublist.append(log.TaskLog(index=[1, 1], task_class="1_1", last_run_success=False))
         output.append(sublist)
-        success, log = workflow._run_tasks(tree, None)
+        success, task_log = workflow._run_tasks(tree, None)
         self.assertEqual(success, False)
-        self.assertEqual(log, output)
+        self.assertEqual(task_log, output)
 
     def test_run_tasks_parallel_lists_empty_log(self):
         tree = []
@@ -189,18 +193,18 @@ class TestWorkflow(unittest.TestCase):
         tree.append([sublist1, sublist2])
         tree.append(MockTask(True, "2"))
         output = []
-        output.append(helper.TaskLog(index=[0], task_class="0", last_run_success=True))
+        output.append(log.TaskLog(index=[0], task_class="0", last_run_success=True))
         sublog1 = []
-        sublog1.append(helper.TaskLog(index=[1, "p0", 0], task_class="1_0_0", last_run_success=True))
-        sublog1.append(helper.TaskLog(index=[1, "p0", 1], task_class="1_0_1", last_run_success=True))
+        sublog1.append(log.TaskLog(index=[1, "p0", 0], task_class="1_0_0", last_run_success=True))
+        sublog1.append(log.TaskLog(index=[1, "p0", 1], task_class="1_0_1", last_run_success=True))
         sublog2 = []
-        sublog2.append(helper.TaskLog(index=[1, "p1", 0], task_class="1_1_0", last_run_success=True))
-        sublog2.append(helper.TaskLog(index=[1, "p1", 1], task_class="1_1_1", last_run_success=True))
+        sublog2.append(log.TaskLog(index=[1, "p1", 0], task_class="1_1_0", last_run_success=True))
+        sublog2.append(log.TaskLog(index=[1, "p1", 1], task_class="1_1_1", last_run_success=True))
         output.append([sublog1, sublog2])
-        output.append(helper.TaskLog(index=[2], task_class="2", last_run_success=True))
-        success, log = workflow._run_tasks(tree, None)
+        output.append(log.TaskLog(index=[2], task_class="2", last_run_success=True))
+        success, task_log = workflow._run_tasks(tree, None)
         self.assertEqual(success, True)
-        self.assertEqual(log, output)
+        self.assertEqual(task_log, output)
 
     def test_run_tasks_parallel_lists_empty_log_fail(self):
         tree = []
@@ -210,16 +214,16 @@ class TestWorkflow(unittest.TestCase):
         tree.append([sublist1, sublist2])
         tree.append(MockTask(True, "2"))
         output = []
-        output.append(helper.TaskLog(index=[0], task_class="0", last_run_success=True))
+        output.append(log.TaskLog(index=[0], task_class="0", last_run_success=True))
         sublog1 = []
-        sublog1.append(helper.TaskLog(index=[1, "p0", 0], task_class="1_0_0", last_run_success=True))
-        sublog1.append(helper.TaskLog(index=[1, "p0", 1], task_class="1_0_1", last_run_success=False))
+        sublog1.append(log.TaskLog(index=[1, "p0", 0], task_class="1_0_0", last_run_success=True))
+        sublog1.append(log.TaskLog(index=[1, "p0", 1], task_class="1_0_1", last_run_success=False))
         sublog2 = []
-        sublog2.append(helper.TaskLog(index=[1, "p1", 0], task_class="1_1_0", last_run_success=False))
+        sublog2.append(log.TaskLog(index=[1, "p1", 0], task_class="1_1_0", last_run_success=False))
         output.append([sublog1, sublog2])
-        success, log = workflow._run_tasks(tree, None)
+        success, task_log = workflow._run_tasks(tree, None)
         self.assertEqual(success, False)
-        self.assertEqual(log, output)
+        self.assertEqual(task_log, output)
 
     def test_run_tasks_linear_log(self):
         tree = []
@@ -228,14 +232,14 @@ class TestWorkflow(unittest.TestCase):
         tree.append(MockTask(True, "2"))
         tree.append(MockTask(True, "3"))
         in_log = []
-        in_log.append(helper.TaskLog(index=[0], task_class="0", last_run_success=True))
-        in_log.append(helper.TaskLog(index=[1], task_class="1", last_run_success=True))
-        in_log.append(helper.TaskLog(index=[2], task_class="2", last_run_success=True))
-        in_log.append(helper.TaskLog(index=[3], task_class="3", last_run_success=True))
+        in_log.append(log.TaskLog(index=[0], task_class="0", last_run_success=True))
+        in_log.append(log.TaskLog(index=[1], task_class="1", last_run_success=True))
+        in_log.append(log.TaskLog(index=[2], task_class="2", last_run_success=True))
+        in_log.append(log.TaskLog(index=[3], task_class="3", last_run_success=True))
         out_log = deepcopy(in_log)
-        success, log = workflow._run_tasks(tree, in_log)
+        success, task_log = workflow._run_tasks(tree, in_log)
         self.assertEqual(success, True)
-        self.assertEqual(log, out_log)
+        self.assertEqual(task_log, out_log)
 
     def test_run_tasks_linear_log_fail(self):
         tree = []
@@ -244,15 +248,15 @@ class TestWorkflow(unittest.TestCase):
         tree.append(MockTask(False, "2"))
         tree.append(MockTask(True, "3"))
         in_log = []
-        in_log.append(helper.TaskLog(index=[0], task_class="0", last_run_success=True))
-        in_log.append(helper.TaskLog(index=[1], task_class="1", last_run_success=True))
-        in_log.append(helper.TaskLog(index=[2], task_class="2", last_run_success=True))
-        in_log.append(helper.TaskLog(index=[3], task_class="3", last_run_success=True))
+        in_log.append(log.TaskLog(index=[0], task_class="0", last_run_success=True))
+        in_log.append(log.TaskLog(index=[1], task_class="1", last_run_success=True))
+        in_log.append(log.TaskLog(index=[2], task_class="2", last_run_success=True))
+        in_log.append(log.TaskLog(index=[3], task_class="3", last_run_success=True))
         out_log = deepcopy(in_log)
-        out_log[2] = helper.TaskLog(index=[2], task_class="2", last_run_success=False)
-        success, log = workflow._run_tasks(tree, in_log)
+        out_log[2] = log.TaskLog(index=[2], task_class="2", last_run_success=False)
+        success, task_log = workflow._run_tasks(tree, in_log)
         self.assertEqual(success, False)
-        self.assertEqual(log, out_log)
+        self.assertEqual(task_log, out_log)
 
     def test_run_tasks_parallel_tasks_log(self):
         tree = []
@@ -260,16 +264,16 @@ class TestWorkflow(unittest.TestCase):
         tree.append([MockTask(True, "1_0"), MockTask(True, "1_1")])
         tree.append(MockTask(True, "2"))
         in_log = []
-        in_log.append(helper.TaskLog(index=[0], task_class="0", last_run_success=True))
+        in_log.append(log.TaskLog(index=[0], task_class="0", last_run_success=True))
         sublist = []
-        sublist.append(helper.TaskLog(index=[1, 0], task_class="1_0", last_run_success=True))
-        sublist.append(helper.TaskLog(index=[1, 1], task_class="1_1", last_run_success=True))
+        sublist.append(log.TaskLog(index=[1, 0], task_class="1_0", last_run_success=True))
+        sublist.append(log.TaskLog(index=[1, 1], task_class="1_1", last_run_success=True))
         in_log.append(sublist)
-        in_log.append(helper.TaskLog(index=[2], task_class="2", last_run_success=True))
+        in_log.append(log.TaskLog(index=[2], task_class="2", last_run_success=True))
         out_log = deepcopy(in_log)
-        success, log = workflow._run_tasks(tree, in_log)
+        success, task_log = workflow._run_tasks(tree, in_log)
         self.assertEqual(success, True)
-        self.assertEqual(log, out_log)
+        self.assertEqual(task_log, out_log)
 
     def test_run_tasks_parallel_tasks_log_fail(self):
         tree = []
@@ -277,17 +281,17 @@ class TestWorkflow(unittest.TestCase):
         tree.append([MockTask(True, "1_0"), MockTask(False, "1_1")])
         tree.append(MockTask(True, "2"))
         in_log = []
-        in_log.append(helper.TaskLog(index=[0], task_class="0", last_run_success=True))
+        in_log.append(log.TaskLog(index=[0], task_class="0", last_run_success=True))
         sublist = []
-        sublist.append(helper.TaskLog(index=[1, 0], task_class="1_0", last_run_success=True))
-        sublist.append(helper.TaskLog(index=[1, 1], task_class="1_1", last_run_success=True))
+        sublist.append(log.TaskLog(index=[1, 0], task_class="1_0", last_run_success=True))
+        sublist.append(log.TaskLog(index=[1, 1], task_class="1_1", last_run_success=True))
         in_log.append(sublist)
-        in_log.append(helper.TaskLog(index=[2], task_class="2", last_run_success=True))
+        in_log.append(log.TaskLog(index=[2], task_class="2", last_run_success=True))
         out_log = deepcopy(in_log)
-        out_log[1][1] = helper.TaskLog(index=[1, 1], task_class="1_1", last_run_success=False)
-        success, log = workflow._run_tasks(tree, in_log)
+        out_log[1][1] = log.TaskLog(index=[1, 1], task_class="1_1", last_run_success=False)
+        success, task_log = workflow._run_tasks(tree, in_log)
         self.assertEqual(success, False)
-        self.assertEqual(log, out_log)
+        self.assertEqual(task_log, out_log)
 
     def test_run_tasks_parallel_lists_log(self):
         tree = []
@@ -297,19 +301,19 @@ class TestWorkflow(unittest.TestCase):
         tree.append([sublist1, sublist2])
         tree.append(MockTask(True, "2"))
         in_log = []
-        in_log.append(helper.TaskLog(index=[0], task_class="0", last_run_success=True))
+        in_log.append(log.TaskLog(index=[0], task_class="0", last_run_success=True))
         sublog1 = []
-        sublog1.append(helper.TaskLog(index=[1, "p0", 0], task_class="1_0_0", last_run_success=True))
-        sublog1.append(helper.TaskLog(index=[1, "p0", 1], task_class="1_0_1", last_run_success=True))
+        sublog1.append(log.TaskLog(index=[1, "p0", 0], task_class="1_0_0", last_run_success=True))
+        sublog1.append(log.TaskLog(index=[1, "p0", 1], task_class="1_0_1", last_run_success=True))
         sublog2 = []
-        sublog2.append(helper.TaskLog(index=[1, "p1", 0], task_class="1_1_0", last_run_success=True))
-        sublog2.append(helper.TaskLog(index=[1, "p1", 1], task_class="1_1_1", last_run_success=True))
+        sublog2.append(log.TaskLog(index=[1, "p1", 0], task_class="1_1_0", last_run_success=True))
+        sublog2.append(log.TaskLog(index=[1, "p1", 1], task_class="1_1_1", last_run_success=True))
         in_log.append([sublog1, sublog2])
-        in_log.append(helper.TaskLog(index=[2], task_class="2", last_run_success=True))
+        in_log.append(log.TaskLog(index=[2], task_class="2", last_run_success=True))
         out_log = deepcopy(in_log)
-        success, log = workflow._run_tasks(tree, in_log)
+        success, task_log = workflow._run_tasks(tree, in_log)
         self.assertEqual(success, True)
-        self.assertEqual(log, out_log)
+        self.assertEqual(task_log, out_log)
 
     def test_run_tasks_parallel_lists_log_fail(self):
         tree = []
@@ -319,21 +323,21 @@ class TestWorkflow(unittest.TestCase):
         tree.append([sublist1, sublist2])
         tree.append(MockTask(True, "2"))
         in_log = []
-        in_log.append(helper.TaskLog(index=[0], task_class="0", last_run_success=True))
+        in_log.append(log.TaskLog(index=[0], task_class="0", last_run_success=True))
         sublog1 = []
-        sublog1.append(helper.TaskLog(index=[1, "p0", 0], task_class="1_0_0", last_run_success=True))
-        sublog1.append(helper.TaskLog(index=[1, "p0", 1], task_class="1_0_1", last_run_success=True))
+        sublog1.append(log.TaskLog(index=[1, "p0", 0], task_class="1_0_0", last_run_success=True))
+        sublog1.append(log.TaskLog(index=[1, "p0", 1], task_class="1_0_1", last_run_success=True))
         sublog2 = []
-        sublog2.append(helper.TaskLog(index=[1, "p1", 0], task_class="1_1_0", last_run_success=True))
-        sublog2.append(helper.TaskLog(index=[1, "p1", 1], task_class="1_1_1", last_run_success=True))
+        sublog2.append(log.TaskLog(index=[1, "p1", 0], task_class="1_1_0", last_run_success=True))
+        sublog2.append(log.TaskLog(index=[1, "p1", 1], task_class="1_1_1", last_run_success=True))
         in_log.append([sublog1, sublog2])
-        in_log.append(helper.TaskLog(index=[2], task_class="2", last_run_success=True))
+        in_log.append(log.TaskLog(index=[2], task_class="2", last_run_success=True))
         out_log = deepcopy(in_log)
-        out_log[1][0][1] = helper.TaskLog(index=[1, "p0", 1], task_class="1_0_1", last_run_success=False)
-        out_log[1][1][0] = helper.TaskLog(index=[1, "p1", 0], task_class="1_1_0", last_run_success=False)
-        success, log = workflow._run_tasks(tree, in_log)
+        out_log[1][0][1] = log.TaskLog(index=[1, "p0", 1], task_class="1_0_1", last_run_success=False)
+        out_log[1][1][0] = log.TaskLog(index=[1, "p1", 0], task_class="1_1_0", last_run_success=False)
+        success, task_log = workflow._run_tasks(tree, in_log)
         self.assertEqual(success, False)
-        self.assertEqual(log, out_log)
+        self.assertEqual(task_log, out_log)
 
     def test_run_tasks_parallel_tasks_wrong_log(self):
         tree = []
@@ -341,17 +345,17 @@ class TestWorkflow(unittest.TestCase):
         tree.append([MockTask(True, "1_0"), MockTask(True, "1_1")])
         tree.append(MockTask(True, "2"))
         in_log = []
-        in_log.append(helper.TaskLog(index=[0], task_class="0", last_run_success=True))
-        in_log.append(helper.TaskLog(index=[1], task_class="1", last_run_success=True))
-        in_log.append(helper.TaskLog(index=[2], task_class="2", last_run_success=True))
+        in_log.append(log.TaskLog(index=[0], task_class="0", last_run_success=True))
+        in_log.append(log.TaskLog(index=[1], task_class="1", last_run_success=True))
+        in_log.append(log.TaskLog(index=[2], task_class="2", last_run_success=True))
         out_log = deepcopy(in_log)
         sublist = []
-        sublist.append(helper.TaskLog(index=[1, 0], task_class="1_0", last_run_success=True))
-        sublist.append(helper.TaskLog(index=[1, 1], task_class="1_1", last_run_success=True))
+        sublist.append(log.TaskLog(index=[1, 0], task_class="1_0", last_run_success=True))
+        sublist.append(log.TaskLog(index=[1, 1], task_class="1_1", last_run_success=True))
         out_log[1] = sublist
-        success, log = workflow._run_tasks(tree, in_log)
+        success, task_log = workflow._run_tasks(tree, in_log)
         self.assertEqual(success, True)
-        self.assertEqual(log, out_log)
+        self.assertEqual(task_log, out_log)
 
     def test_run_tasks_parallel_tasks_crop_log(self):
         tree = []
@@ -359,15 +363,15 @@ class TestWorkflow(unittest.TestCase):
         tree.append(MockTask(True, "1"))
         tree.append(MockTask(True, "2"))
         in_log = []
-        in_log.append(helper.TaskLog(index=[0], task_class="0", last_run_success=True))
-        in_log.append(helper.TaskLog(index=[1], task_class="1", last_run_success=True))
-        in_log.append(helper.TaskLog(index=[2], task_class="2", last_run_success=True))
-        in_log.append(helper.TaskLog(index=[3], task_class="3", last_run_success=True))
+        in_log.append(log.TaskLog(index=[0], task_class="0", last_run_success=True))
+        in_log.append(log.TaskLog(index=[1], task_class="1", last_run_success=True))
+        in_log.append(log.TaskLog(index=[2], task_class="2", last_run_success=True))
+        in_log.append(log.TaskLog(index=[3], task_class="3", last_run_success=True))
         out_log = deepcopy(in_log)
         del out_log[-1]
-        success, log = workflow._run_tasks(tree, in_log)
+        success, task_log = workflow._run_tasks(tree, in_log)
         self.assertEqual(success, True)
-        self.assertEqual(log, out_log)
+        self.assertEqual(task_log, out_log)
 
     def test_run_tasks_inherent_fail(self):
         tree = []
@@ -376,18 +380,17 @@ class TestWorkflow(unittest.TestCase):
         tree.append(MockTask(False, "2"))
         tree.append(MockTask(True, "3"))
         in_log = []
-        in_log.append(helper.TaskLog(index=[0], task_class="0", last_run_success=True))
-        in_log.append(helper.TaskLog(index=[1], task_class="1", last_run_success=True))
-        in_log.append(helper.TaskLog(index=[2], task_class="2", last_run_success=True))
-        in_log.append(helper.TaskLog(index=[3], task_class="3", last_run_success=True))
+        in_log.append(log.TaskLog(index=[0], task_class="0", last_run_success=True))
+        in_log.append(log.TaskLog(index=[1], task_class="1", last_run_success=True))
+        in_log.append(log.TaskLog(index=[2], task_class="2", last_run_success=True))
+        in_log.append(log.TaskLog(index=[3], task_class="3", last_run_success=True))
         out_log = deepcopy(in_log)
-        out_log[1] = helper.TaskLog(index=[1], task_class="1",  last_run_success=False)
-        success, log = workflow._run_tasks(tree, in_log)
+        out_log[1] = log.TaskLog(index=[1], task_class="1",  last_run_success=False)
+        success, task_log = workflow._run_tasks(tree, in_log)
         self.assertEqual(success, False)
-        self.assertEqual(log, out_log)
+        self.assertEqual(task_log, out_log)
 
 
-import wolo.log as log
 class TetsLogObject(unittest.TestCase):
     @mock.patch("wolo.log.Path.cwd", return_value=Path("test"))
     def test_log_init(self, cwd_mock):
@@ -424,15 +427,15 @@ class TetsLogObject(unittest.TestCase):
 
 
 example_log = []
-example_log.append(helper.TaskLog(index=[0], task_class="0", last_run_success=True))
+example_log.append(log.TaskLog(index=[0], task_class="0", last_run_success=True))
 sublog1 = []
-sublog1.append(helper.TaskLog(index=[1, "p0", 0], task_class="1_0_0", last_run_success=True))
-sublog1.append(helper.TaskLog(index=[1, "p0", 1], task_class="1_0_1", last_run_success=True))
+sublog1.append(log.TaskLog(index=[1, "p0", 0], task_class="1_0_0", last_run_success=True))
+sublog1.append(log.TaskLog(index=[1, "p0", 1], task_class="1_0_1", last_run_success=True))
 sublog2 = []
-sublog2.append(helper.TaskLog(index=[1, "p1", 0], task_class="1_1_0", last_run_success=False))
-sublog2.append(helper.TaskLog(index=[1, "p1", 1], task_class="1_1_1", last_run_success=True))
+sublog2.append(log.TaskLog(index=[1, "p1", 0], task_class="1_1_0", last_run_success=False))
+sublog2.append(log.TaskLog(index=[1, "p1", 1], task_class="1_1_1", last_run_success=True))
 example_log.append([sublog1, sublog2])
-example_log.append(helper.TaskLog(index=[2], task_class="2", last_run_success=True))
+example_log.append(log.TaskLog(index=[2], task_class="2", last_run_success=True))
 test_view = log.View(example_log)
 
 class TestView(unittest.TestCase):
