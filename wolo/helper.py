@@ -20,4 +20,15 @@ def cut_or_pad(master, slave, enum=False):
         else:
             yield master[i], slave_val
 
-TaskLog = namedtuple("TaskLog", ["task_class", "inputs", "outputs", "last_run_success"])
+
+def flatten_log(L):
+    """Flattens a nested log"""
+    for i in L:
+        if isinstance(i, TaskLog):
+            yield i
+        else:
+            yield from flatten_log(i)
+
+
+TaskLog = namedtuple("TaskLog", ["index", "task_class", "inputs", "outputs", "last_run_success"])
+TaskLog.__new__.__defaults__ = ((), None, {}, {}, False)

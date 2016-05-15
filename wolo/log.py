@@ -1,6 +1,8 @@
 from pathlib import Path
 import pickle
 
+from .helper import flatten_log
+
 
 class Log():
     """Wolo will create all the logs is a subfolder of the current working dir called .wolo.
@@ -22,6 +24,10 @@ class Log():
         self._log = new_log
         self._write()
 
+    def view(self):
+        """Generate a view opject from the current log, which can be manipulated and analysed."""
+        return View(self.log)
+
     def _load(self):
         if self._log_path.is_file():
             return pickle.load(self._log_path.open("rb"))
@@ -36,6 +42,13 @@ class Log():
 class View():
     def __init__(self, log):
         self.log = log
+        self._flattened = None
 
     def as_dict(self):
         return dict(self.log)
+
+    @property
+    def flat(self):
+        if not self._flattened:
+            self._flattened = flatten_log(self.log)
+        return self._flattened
