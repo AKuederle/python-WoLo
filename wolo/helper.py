@@ -29,6 +29,13 @@ def flatten_log(L):
         else:
             yield from flatten_log(i)
 
+def recursive_iterate_log(L, func):
+    for i in L:
+        if isinstance(i, TaskLog):
+            yield func(i)
+        else:
+            yield list(recursive_iterate_log(i, func))
+
 
 TaskLog = namedtuple("TaskLog", ["index", "task_class", "inputs", "outputs", "last_run_success"])
 TaskLog.__new__.__defaults__ = ((), None, {}, {}, False)

@@ -423,28 +423,29 @@ class TetsLogObject(unittest.TestCase):
         self.assertEqual(test_log.view().log, "test2")
 
 
+example_log = []
+example_log.append(helper.TaskLog(index=[0], task_class="0", last_run_success=True))
+sublog1 = []
+sublog1.append(helper.TaskLog(index=[1, "p0", 0], task_class="1_0_0", last_run_success=True))
+sublog1.append(helper.TaskLog(index=[1, "p0", 1], task_class="1_0_1", last_run_success=True))
+sublog2 = []
+sublog2.append(helper.TaskLog(index=[1, "p1", 0], task_class="1_1_0", last_run_success=False))
+sublog2.append(helper.TaskLog(index=[1, "p1", 1], task_class="1_1_1", last_run_success=True))
+example_log.append([sublog1, sublog2])
+example_log.append(helper.TaskLog(index=[2], task_class="2", last_run_success=True))
+test_view = log.View(example_log)
+
 class TestView(unittest.TestCase):
     def test_flatten(self):
-        in_log = []
-        in_log.append(helper.TaskLog(index=[0], task_class="0", last_run_success=True))
-        sublog1 = []
-        sublog1.append(helper.TaskLog(index=[1, "p0", 0], task_class="1_0_0", last_run_success=True))
-        sublog1.append(helper.TaskLog(index=[1, "p0", 1], task_class="1_0_1", last_run_success=True))
-        sublog2 = []
-        sublog2.append(helper.TaskLog(index=[1, "p1", 0], task_class="1_1_0", last_run_success=True))
-        sublog2.append(helper.TaskLog(index=[1, "p1", 1], task_class="1_1_1", last_run_success=True))
-        in_log.append([sublog1, sublog2])
-        in_log.append(helper.TaskLog(index=[2], task_class="2", last_run_success=True))
-        test_view = log.View(in_log)
-        self.assertEqual(list(test_view.flat), [in_log[0], sublog1[0], sublog1[1], sublog2[0], sublog2[1], in_log[2]])
+        self.assertEqual(list(test_view.flat), [example_log[0], sublog1[0], sublog1[1], sublog2[0], sublog2[1], example_log[2]])
 
+    def test_simple_tree(self):
+        self.assertEqual(test_view.simple_tree(), ["0", [["1_0_0", "1_0_1"], ["1_1_0", "1_1_1"]], "2"])
 
-    # @mock.patch("wolo.log.pickle.load", side_effect=lambda x: x)
-    # @mock.patch("wolo.log.Path.is_file", side_effect=lambda: False)
-    # @mock.patch("wolo.log.Path.mkdir")
-    # def test_log_reading_empty(self, makedirs_mock, isfile_mock, load_mock):
-    #     test_log = log.Log(name="test/path.rac")
-    #     self.assertEqual(test_log.log, None)
+    def test_simple_tree_foramtter(self):
+        output = [{"0": True}, [[{"1_0_0": True}, {"1_0_1": True}], [{"1_1_0": False}, {"1_1_1": True}]], {"2": True}]
+        self.assertEqual(test_view.simple_tree(formatter=lambda x: {x.task_class: x.last_run_success}), output)
+
 
 
 

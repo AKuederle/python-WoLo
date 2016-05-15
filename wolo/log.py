@@ -1,7 +1,7 @@
 from pathlib import Path
 import pickle
 
-from .helper import flatten_log
+from .helper import flatten_log, recursive_iterate_log
 
 
 class Log():
@@ -52,3 +52,6 @@ class View():
         if not self._flattened:
             self._flattened = flatten_log(self.log)
         return self._flattened
+
+    def simple_tree(self, formatter=lambda x: x.task_class):
+        return list(recursive_iterate_log(self.log, formatter))
