@@ -92,7 +92,7 @@ class Task():
         outputs_changed = self._check(self.outputs, log.outputs)
         print("inputs changed: {}".format(inputs_changed))
         print("outputs changed: {}".format(outputs_changed))
-        if inputs_changed is True or outputs_changed is True or log.last_run_success is False:
+        if inputs_changed is True or outputs_changed is True or log.last_run_success is not True:
             log = self._rerun(log)
         return log
 
