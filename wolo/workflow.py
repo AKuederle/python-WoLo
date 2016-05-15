@@ -62,8 +62,6 @@ def _run_tasks(task_list, log, level=[]):
 
     This is the main function of the module. It is called by the Workflow.run() method. It automatically runs tasks, that can be run in parallel in MultiThreads.
     """
-    if not isinstance(log, list):
-        log = []
     success = False
 
     for i, step, task_log in cut_or_pad(task_list, log, enum=True):
@@ -108,7 +106,7 @@ def _run_tasks(task_list, log, level=[]):
     else:
         success = True
         # This crops the log of tasks, that were removed from the tasktree
-        log = log[:i+1]
+        log = log[:i + 1]
 
     return success, log
 

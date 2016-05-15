@@ -1,6 +1,5 @@
 from pathlib import Path
 import pickle
-from collections import namedtuple
 
 from .helper import pretty_print_index
 
@@ -64,7 +63,7 @@ class Log():
         if self._log_path.is_file():
             return pickle.load(self._log_path.open("rb"))
         else:
-            return None
+            return []
 
     def _write(self):
         self._log_dic.mkdir(parents=True, exist_ok=True)
@@ -116,6 +115,3 @@ def _recursive_iterate_log(L, func):
             yield func(i)
         else:
             yield list(_recursive_iterate_log(i, func))
-
-# TaskLog = namedtuple("TaskLog", ["index", "task_class", "inputs", "outputs", "last_run_success"])
-# TaskLog.__new__.__defaults__ = ((), None, {}, {}, False)
