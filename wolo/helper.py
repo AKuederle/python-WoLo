@@ -1,8 +1,15 @@
 
 
-def pretty_print_index(index):
-    '''Turn the index into a formated string which is shown a output'''
-    return "".join(["[{}]".format(i) for i in index])
+def pretty_print_index(index, style="brackets"):
+    '''Turn the index into a formated string which is shown a output.
+    Two stzles are available:
+    - brackets: [1][1][1]
+    - underscore: 1_1_1
+    '''
+    if style == "brackets":
+        return "".join(["[{}]".format(i) for i in index])
+    elif style == "underscore":
+        return "_".join([str(i) for i in index])
 
 
 def cut_or_pad(master, slave, enum=False):

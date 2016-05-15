@@ -102,11 +102,11 @@ class Task():
         success = all(self.success())
         if success is True:
             # rebuild log. The log is only updated if the task ran successfully
-            log = log._replace(inputs=self._rebuild(self.inputs))
-            log = log._replace(outputs=self._rebuild(self.outputs))
-            log = log._replace(last_run_success=True)
+            log.inputs = self._rebuild(self.inputs)
+            log.outputs = self._rebuild(self.outputs)
+            log.last_run_success = True
         else:
-            log = log._replace(last_run_success=False)
+            log.last_run_success = False
         print(success)
         return log
 
