@@ -113,14 +113,11 @@ class MockTask():
 
 class TestWorkflow(unittest.TestCase):
     maxDiff = None
-    @mock.patch("wolo.workflow.Workflow._read_log")
-    @mock.patch("wolo.workflow.Workflow._create_logfile")
     @mock.patch("wolo.workflow.Workflow.before")
-    def test_workflow_init(self, before_mock, create_mock, readlog_mock):
+    def test_workflow_init(self, before_mock):
         test_workflow = ExampleWorkflow(name="test")
         self.assertEqual(test_workflow._name, "ExampleWorkflow_test")
         self.assertTrue(before_mock.called)
-        self.assertTrue(create_mock.called)
 
     def test_run_tasks_linear_empty_log(self):
         tree = []
@@ -394,13 +391,13 @@ class TetsLogObject(unittest.TestCase):
     @mock.patch("wolo.parameters.Path.is_file", side_effect=lambda: True)
     @mock.patch("wolo.parameters.Path.open", side_effect=lambda x: "test/path.rac")
     def test_log_reading(self, open_mock, isfile_mock, load_mock):
-        test_log = log.Log(path="test/path.rac")
+        test_log = log.Log(name="test/path.rac")
         self.assertEqual(test_log.log, "test/path.rac")
 
     @mock.patch("wolo.log.pickle.load", side_effect=lambda x: x)
     @mock.patch("wolo.parameters.Path.is_file", side_effect=lambda: False)
     def test_log_reading_empty(self, isfile_mock, load_mock):
-        test_log = log.Log(path="test/path.rac")
+        test_log = log.Log(name="test/path.rac")
         self.assertEqual(test_log.log, None)
 
 

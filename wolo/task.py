@@ -1,7 +1,6 @@
 import subprocess
 
 from .parameters import Parameter
-from .helper import none
 
 
 
@@ -76,9 +75,9 @@ class Task():
         for para in para_dic.values():
             if para.name in old_values:
                 old_value = old_values[para.name]
+                if para._log_value != old_value:
+                    changed = True
             else:
-                old_value = none
-            if para._log_value != old_value:
                 changed = True
         return changed
 
@@ -95,9 +94,8 @@ class Task():
         print("inputs changed: {}".format(inputs_changed))
         print("outputs changed: {}".format(outputs_changed))
         if inputs_changed is True or outputs_changed is True or log.last_run_success is False:
-            return self._rerun(log)
-        else:
-            return log
+            log = self._rerun(log)
+        return log
 
     def _rerun(self, log):
         print("rerunning Task...")
