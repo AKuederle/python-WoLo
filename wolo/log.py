@@ -9,7 +9,7 @@ class TaskLog():
         self.index = index
         self.task_class = task_class
         self.inputs = inputs
-        self.ouputs = outputs
+        self.outputs = outputs
         self.last_run_success = last_run_success
 
     def __getitem__(self, selection):
@@ -32,7 +32,7 @@ class TaskLog():
     def _asdict(self):
         i = pretty_print_index(self.index, style="underscore")
         value = dict(self)
-        return {i: value}
+        return i, value
 
 
 class Log():
@@ -43,6 +43,7 @@ class Log():
         self._log_dic = Path.cwd() / ".wolo"
         self._log_path = self._log_dic / ".{}".format(name)
         self._log = None
+        self._flattened = None
 
     @property
     def log(self):
@@ -55,9 +56,12 @@ class Log():
         self._log = new_log
         self._write()
 
-    def view(self):
-        """Generate a view opject from the current log, which can be manipulated and analysed."""
-        return View(self.log)
+    @property
+    def flat(self):
+        """holds a flattended version of log. Can be used to further Dataanalysis. See FlatView() class for more details"""
+        if not self._flattened:
+            self._flattened = FlatView(self.log)
+        return self._flattened
 
     def _load(self):
         if self._log_path.is_file():
@@ -69,35 +73,62 @@ class Log():
         self._log_dic.mkdir(parents=True, exist_ok=True)
         pickle.dump(self._log, self._log_path.open("wb"))
 
-
-class View():
-    def __init__(self, log):
-        self.log = log
-        self._flattened = None
-
-    def as_dict(self):
-        return dict(self.log)
-
-    @property
-    def flat(self):
-        if not self._flattened:
-            self._flattened = FlatView(self.log)
-        return self._flattened
-
     def simple_tree(self, formatter=lambda x: x.task_class):
         return list(_recursive_iterate_log(self.log, formatter))
 
 
 class FlatView():
-    def __init__(self, log):
-        self.log = _flatten_log(log)
+    """FlatView is a flat Dictionary representation of a Log. The intendet usage is to select wanted columns and then exporting it for external Dataanalysis.
+    The selectable columns using the .cols(selection) methode are:
+    - "task_class": Class/Name of the task
+    - "inputs": Dict containing all inputs
+    - "outputs": Dict containing all outputs
+    - "last_run_success": True or False depending if the last time the run was successful
+    - "index": index in tuple form. A string representation of index is already used as main object identifier
+
+    Note: The col emthods still passes all the information to the new Object. So the col selection can be changed from the same Object.
+
+    It is also possible to create a new column from a specific input or output using the .col_from_prop(prop, subprop) method using "inputs"
+    or "outputs" as prop and the wanted parameter name as subprop.
+    """
+
+    def __init__(self, log, initial=None, flatten=True):
+        if flatten is True:
+            self.log = dict(_flatten_log(log))
+        else:
+            self.log = log
+        if not initial:
+            self._initial = self.log
+        else:
+            self._initial = initial
 
     def __repr__(self):
         return self.log
 
     def __iter__(self):
-        for element in self.log:
-            yield element
+        for key, element in self.log.items():
+            yield key, element
+
+    def __getitem__(self, selection):
+        new_log = self.log[selection]
+        return FlatView(new_log, initial=self._initial, flatten=False)
+
+    def cols(self, selection):
+        """Take list of property name and return FlatView object whith just these columns"""
+        new_log = {key: {in_key: val[in_key] for in_key in selection} for key, val in self._initial.items()}
+        return FlatView(new_log, initial=self._initial, flatten=False)
+
+    def col_from_prop(self, prop, subprop):
+        for key, value in self._initial.items():
+            if subprop in value[prop]:
+                val = self.log[key]
+                val.update({subprop: value[prop][subprop]})
+                self.log[key] = val
+        return FlatView(self.log, initial=self._initial, flatten=False)
+
+    def to_pandas(self):
+        import pandas as pd
+        return pd.DataFrame.from_dict(self.log).T
 
 
 def _flatten_log(L):

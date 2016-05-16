@@ -426,12 +426,6 @@ class TetsLogObject(unittest.TestCase):
         self.assertEqual(test_log._log, "test2")
         self.assertTrue(write_mock.called)
 
-    def test_view_creation(self):
-        test_log = log.Log(name="test")
-        test_log._log = "test2"
-        self.assertEqual(test_log.view().log, "test2")
-
-
 example_log = []
 example_log.append(log.TaskLog(index=[0], task_class="0", last_run_success=True))
 sublog1 = []
@@ -442,18 +436,49 @@ sublog2.append(log.TaskLog(index=[1, "p1", 0], task_class="1_1_0", last_run_succ
 sublog2.append(log.TaskLog(index=[1, "p1", 1], task_class="1_1_1", last_run_success=True))
 example_log.append([sublog1, sublog2])
 example_log.append(log.TaskLog(index=[2], task_class="2", last_run_success=True))
-test_view = log.View(example_log)
+test_flat_view = log.FlatView(example_log)
+test_flat_output = {"0": {"index": [0], "task_class": "0", "last_run_success": True, "inputs": {}, "outputs": {}},
+                    "1_p0_0": {"index": [1, "p0", 0], "task_class": "1_0_0", "last_run_success": True, "inputs": {}, "outputs": {}},
+                    "1_p0_1": {"index": [1, "p0", 1], "task_class": "1_0_1", "last_run_success": True, "inputs": {}, "outputs": {}},
+                    "1_p1_0": {"index": [1, "p1", 0], "task_class": "1_1_0", "last_run_success": False, "inputs": {}, "outputs": {}},
+                    "1_p1_1": {"index": [1, "p1", 1], "task_class": "1_1_1", "last_run_success": True, "inputs": {}, "outputs": {}},
+                    "2": {"index": [2], "task_class": "2", "last_run_success": True, "inputs": {}, "outputs": {}}}
 
-class TestView(unittest.TestCase):
+class TestFlatView(unittest.TestCase):
     # def test_flatten(self):
     #     self.assertEqual(list(test_view.flat), [example_log[0], sublog1[0], sublog1[1], sublog2[0], sublog2[1], example_log[2]])
 
-    def test_simple_tree(self):
-        self.assertEqual(test_view.simple_tree(), ["0", [["1_0_0", "1_0_1"], ["1_1_0", "1_1_1"]], "2"])
+    # def test_simple_tree(self):
+    #     self.assertEqual(example_log.simple_tree(), ["0", [["1_0_0", "1_0_1"], ["1_1_0", "1_1_1"]], "2"])
+    #
+    # def test_simple_tree_formatter(self):
+    #     output = [{"0": True}, [[{"1_0_0": True}, {"1_0_1": True}], [{"1_1_0": False}, {"1_1_1": True}]], {"2": True}]
+    #     self.assertEqual(example_log.simple_tree(formatter=lambda x: {x.task_class: x.last_run_success}), output)
+    def test_flat_view_repr(self):
+        self.assertEqual(test_flat_view.__repr__(), test_flat_output)
 
-    def test_simple_tree_foramtter(self):
-        output = [{"0": True}, [[{"1_0_0": True}, {"1_0_1": True}], [{"1_1_0": False}, {"1_1_1": True}]], {"2": True}]
-        self.assertEqual(test_view.simple_tree(formatter=lambda x: {x.task_class: x.last_run_success}), output)
+    def test_flat_view_iter(self):
+        self.assertEqual(dict(test_flat_view), test_flat_output)
+
+    def test_flat_view_col_selection(self):
+        output = {"0": {"task_class": "0", "last_run_success": True},
+                  "1_p0_0": {"task_class": "1_0_0", "last_run_success": True},
+                  "1_p0_1": {"task_class": "1_0_1", "last_run_success": True},
+                  "1_p1_0": {"task_class": "1_1_0", "last_run_success": False},
+                  "1_p1_1": {"task_class": "1_1_1", "last_run_success": True},
+                  "2": {"task_class": "2", "last_run_success": True}}
+        self.assertEqual(test_flat_view.cols(["task_class", "last_run_success"]).__repr__(), output)
+
+    def test_flat_view_col_from_prop(self):
+        in_log = []
+        in_log.append(log.TaskLog(index=[0], task_class="0", last_run_success=True, inputs={"test": "testval"}))
+        in_log.append(log.TaskLog(index=[1], task_class="1", last_run_success=True))
+        test_view = log.FlatView(in_log)
+        output = {"0": {"task_class": "0", "test": "testval"},
+                  "1": {"task_class": "1"}}
+        self.assertEqual(test_view.cols(["task_class"]).col_from_prop("inputs", "test").__repr__(), output)
+
+
 
 
 
