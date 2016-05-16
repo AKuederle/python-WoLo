@@ -22,7 +22,7 @@ setup(
     packages=['wolo'],
     license='LICENSE.txt',
     description='A scientific workflow tool written in Python',
-    long_description=open('README.txt').read(),
+    long_description=open('README.rst').read(),
     extras_require={
         'export log as dataframe': ['pandas']
     }
