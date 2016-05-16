@@ -1,18 +1,17 @@
 # setup.py
 import os
 import sys
+from distutils.core import setup
 
 version = '0.1dev'
 
 if sys.argv[-1] == 'publish':
     os.system("python setup.py sdist upload")
-    os.system("python setup.py bdist_wheel upload")
     print("You probably want to also tag the version now:")
     print("  git tag -a {} -m 'version {}'".format(version, version))
     print("  git push --tags")
     sys.exit()
 
-from distutils.core import setup
 
 setup(
     name='WoLo',
