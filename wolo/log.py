@@ -105,6 +105,9 @@ class FlatView():
     def __repr__(self):
         return self.log
 
+    def __str__(self):
+        return str(self.log)
+
     def __iter__(self):
         for key, element in self.log.items():
             yield key, element
