@@ -16,10 +16,10 @@ But wait, there is more:
 
 - monitor a wide range of inputs and outputs:
 
-    + Files
-    + Input Parameters
-    + Source Code of custom Python modules and functions
-    + Source Code of the Step-configuration itself
+  - Files
+  - Input Parameters
+  - Source Code of custom Python modules and functions
+  - Source Code of the Step-configuration itself
 
 - Easily extend and adapt the functionality with a few lines of Python-code
 - Keep track and safe custom logs alongside with your workflow \*
