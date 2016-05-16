@@ -1,2 +1,5 @@
 __pycache__
+MANIFEST
 /example
+/dist
+/build

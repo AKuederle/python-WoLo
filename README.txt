@@ -1,4 +1,6 @@
-# WoLo
+=======
+WoLo
+=======
 
 WoLo is a lightweight Python tool to create and **Lo**g **Wo**rkflows for dynamic scientific data analysis. It has a very small footprint and is entirely written and configurable using plane Python. This makes is easy to use, but doesn't sacrifice flexibility and extensibility.
 With WoLo you can keep the overview over your data analysis while making it easily shareable and understandable.
