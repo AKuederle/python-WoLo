@@ -13,8 +13,8 @@ class Task():
         - action : method that contains the action that the task should perform. The optional return parameter is stored in self.report
         - success : method must return True or a list which evaluate to True for the Task to be considered successful
     Furthermore, it can have the following methods:
-        - before : method contains code that need to be run before everything else in the tasks
-        - after : method contains code that run after everything else in the Task
+        - before : method contains code that need to be run before everything else in the tasks.
+        - after : method contains code that run after everything else in the Task. Can return WoLo Parameters, which will be stored in the log file
 
     Further notes:
         All arguments passed to a custom Task are stored in self.args and self.kwargs
@@ -43,6 +43,8 @@ class Task():
 
         def after(self):
             print(self.report) # print the action results
+            report = wolo.Parameter("report", self.report)
+            return report  # This will be stored in self.info and stored in the Log file
     """
 
     def __init__(self, *args, **kwargs):
@@ -100,6 +102,7 @@ class Task():
         print("rerunning Task...")
         self.report = self.action()
         success = all(self.success())
+        log.info = self._rebuild(self._process(self.after()))
         if success is True:
             # rebuild log. The log is only updated if the task ran successfully
             log.inputs = self._rebuild(self.inputs)

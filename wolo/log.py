@@ -5,12 +5,13 @@ from .helper import pretty_print_index
 
 
 class TaskLog():
-    def __init__(self, index, task_class, inputs={}, outputs={}, last_run_success=None):
+    def __init__(self, index, task_class, inputs={}, outputs={}, info={}, last_run_success=None):
         self.index = index
         self.task_class = task_class
         self.inputs = inputs
         self.outputs = outputs
         self.last_run_success = last_run_success
+        self.info = info
 
     def __getitem__(self, selection):
         return {key: self.__dict__[key] for key in selection}
@@ -83,6 +84,7 @@ class FlatView():
     - "task_class": Class/Name of the task
     - "inputs": Dict containing all inputs
     - "outputs": Dict containing all outputs
+    - "info": Dict containing addtional information returnend by the after method
     - "last_run_success": True or False depending if the last time the run was successful
     - "index": index in tuple form. A string representation of index is already used as main object identifier
 
