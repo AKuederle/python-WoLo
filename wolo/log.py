@@ -1,5 +1,5 @@
 from pathlib import Path
-import pickle
+import json
 
 from .helper import pretty_print_index
 
@@ -30,18 +30,26 @@ class TaskLog():
     def __ne__(self, other):
         return not self.__eq__(other)
 
-    def _asdict(self):
+    def _to_dict(self):
         i = pretty_print_index(self.index, style="underscore")
         value = dict(self)
         return i, value
+
+    @classmethod
+    def _from_dict(cls, dict):
+        return cls(**dict)
 
 
 class Log():
     """Wolo will create all the logs is a subfolder of the current working dir called .wolo.
     Be aware, that you have to call the workflow file from the same working directory every time
     """
-    def __init__(self, name):
-        self._log_dic = Path.cwd() / ".wolo"
+    def __init__(self, name, log_dic=None):
+        if log_dic:
+            self._log_dic = Path(log_dic)
+        else:
+            self._log_dic = Path.cwd()
+        self._log_dic = self._log_dic / ".wolo"
         self._log_path = self._log_dic / ".{}".format(name)
         self._log = None
         self._flattened = None
@@ -66,13 +74,17 @@ class Log():
 
     def _load(self):
         if self._log_path.is_file():
-            return pickle.load(self._log_path.open("rb"))
+            temp_log = json.load(self._log_path.open("r"))
+            return list(_recursive_iterate_log(temp_log, TaskLog._from_dict))
         else:
             return []
 
     def _write(self):
         self._log_dic.mkdir(parents=True, exist_ok=True)
-        pickle.dump(self._log, self._log_path.open("wb"))
+        save_log = _recursive_iterate_log(self.log, lambda x: dict(x))
+        json.dump(list(save_log), self._log_path.open("w"), sort_keys=True, indent=4)
+
+
 
     def simple_tree(self, formatter=lambda x: x.task_class):
         return list(_recursive_iterate_log(self.log, formatter))
@@ -133,21 +145,21 @@ class FlatView():
 
     def to_pandas(self):
         import pandas as pd
-        return pd.DataFrame.from_dict(self.log).T
+        return pd.DataFrame.from_dict(self.log, orient="index")
 
 
 def _flatten_log(L):
     """Flattens a nested log"""
     for i in L:
         if isinstance(i, TaskLog):
-            yield i._asdict()
+            yield i._to_dict()
         else:
             yield from _flatten_log(i)
 
 
 def _recursive_iterate_log(L, func):
     for i in L:
-        if isinstance(i, TaskLog):
-            yield func(i)
-        else:
+        if isinstance(i, (list, tuple)):
             yield list(_recursive_iterate_log(i, func))
+        else:
+            yield func(i)

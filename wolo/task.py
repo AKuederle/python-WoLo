@@ -70,7 +70,6 @@ class Task():
         name_list = [para.name for para in para_list]
         if not len(set(name_list)) == len(name_list):
             raise Warning("Multiple Parameter have the same name! {}".format(name_list))
-        print(convert_dict_to_namedtuple({para.name: para for para in para_list}))
         return convert_dict_to_namedtuple({para.name: para for para in para_list})
 
     def _check(self, para_dic, old_values):
@@ -78,7 +77,8 @@ class Task():
         for para in para_dic:
             if para.name in old_values:
                 old_value = old_values[para.name]
-                if para._log_value != old_value:
+                log_value = para._log_value if not isinstance(para._log_value, tuple) else list(para._log_value)
+                if log_value != old_value:
                     changed = True
             else:
                 changed = True

@@ -34,14 +34,14 @@ class Workflow():
 
     """
 
-    def __init__(self, name=None, *args, **kwargs):
+    def __init__(self, name=None, log_dic=None, *args, **kwargs):
         self._name = type(self).__name__
         if name:
             self._name = "{}_{}".format(self._name, name)
         self.args = args
         self.kwargs = kwargs
         self.before()
-        self.log = Log(self._name)
+        self.log = Log(self._name, log_dic=log_dic)
         self.tasklist = self.tasktree()
 
     def before(self):

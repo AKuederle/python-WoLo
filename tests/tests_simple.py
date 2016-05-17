@@ -426,6 +426,17 @@ class TetsLogObject(unittest.TestCase):
         self.assertEqual(test_log._log, "test2")
         self.assertTrue(write_mock.called)
 
+    def test_tasklog_from_dict(self):
+        self.assertEqual(log.TaskLog(index=[2], task_class="test"), log.TaskLog._from_dict({"index": [2], "task_class": "test"}))
+
+    # def test_load_json(self):
+    #     in_log = []
+    #     in_log.append(log.TaskLog(index=[0], task_class="0", last_run_success=True))
+    #     in_log.append(log.TaskLog(index=[1], task_class="1", last_run_success=True))
+    #     test_log = log.Log(name="test")
+    #     test_log._log = in_log
+    #     self.assertEqual(test_log._log, )
+
 example_log = []
 example_log.append(log.TaskLog(index=[0], task_class="0", last_run_success=True))
 sublog1 = []
