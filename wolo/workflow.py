@@ -45,11 +45,11 @@ class Workflow():
         self.tasklist = self.tasktree()
 
     def before(self):
-        """Empty method, that can be overwritten by user. is called on initialization of a workflow."""
+        """Empty method, that can be overwritten by user. Is called on initialization of a workflow."""
         pass
 
     def after(self):
-        """Empty method, that can be overwritten by user. is called on initialization of a workflow."""
+        """Empty method, that can be overwritten by user. Is called after the workflow ran."""
         pass
 
     def run(self):

@@ -56,11 +56,11 @@ class Task():
         self.outputs = self._process(self.output())
 
     def before(self):
-        """Empty method, that can be overwritten by user. is called on initialization of a task."""
+        """Empty method, that can be overwritten by user. Is called on initialization of a task."""
         pass
 
     def after(self):
-        """Empty method, that can be overwritten by user. is called on initialization of a task."""
+        """Empty method, that can be overwritten by user. Is called after the action method of the task."""
         pass
 
     def _process(self, para_list):
