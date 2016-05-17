@@ -465,7 +465,7 @@ class TestFlatView(unittest.TestCase):
         in_log.append(log.TaskLog(index=[0], task_class="0", last_run_success=True, inputs={"test": "testval"}))
         in_log.append(log.TaskLog(index=[1], task_class="1", last_run_success=True))
         test_view = log.FlatView(in_log)
-        output = {"0": {"task_class": "0", "test": "testval"},
+        output = {"0": {"task_class": "0", "inputs_test": "testval"},
                   "1": {"task_class": "1"}}
         self.assertEqual(test_view.cols(["task_class"]).col_from_prop("inputs", "test").__repr__(), output)
 
