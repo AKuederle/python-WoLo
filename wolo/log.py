@@ -127,7 +127,7 @@ class FlatView():
         for key, value in self._initial.items():
             if subprop in value[prop]:
                 val = self.log[key]
-                val.update({subprop: value[prop][subprop]})
+                val.update({"_".join([prop, subprop]): value[prop][subprop]})
                 self.log[key] = val
         return FlatView(self.log, initial=self._initial, flatten=False)
 
