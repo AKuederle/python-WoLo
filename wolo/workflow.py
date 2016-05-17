@@ -1,6 +1,6 @@
 from multiprocessing.pool import Pool, ThreadPool
 
-from .helper import *
+from .helper import pretty_print_index, cut_or_pad
 from .log import Log, TaskLog
 
 
