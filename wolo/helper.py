@@ -1,3 +1,4 @@
+from collections import namedtuple
 
 
 def pretty_print_index(index, style="brackets"):
@@ -26,3 +27,7 @@ def cut_or_pad(master, slave, enum=False):
             yield i, master[i], slave_val
         else:
             yield master[i], slave_val
+
+def convert_dict_to_namedtuple(dictionary):
+    """taken from https://gist.github.com/href/1319371"""
+    return namedtuple('GenericDict', dictionary.keys())(**dictionary)

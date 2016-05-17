@@ -1,6 +1,7 @@
 import subprocess
 
 from .parameters import Parameter
+from .helper import convert_dict_to_namedtuple
 
 
 class Task():
@@ -50,9 +51,9 @@ class Task():
     def __init__(self, *args, **kwargs):
         self.args = args
         self.kwargs = kwargs
-        self._name = Parameter("_name", type(self).__name__)
-        self._args = Parameter("_args", self.args)
-        self._kwargs = Parameter("_kwargs", self.kwargs)
+        self._name = Parameter("name_", type(self).__name__)
+        self._args = Parameter("args_", self.args)
+        self._kwargs = Parameter("kwargs_", self.kwargs)
         self.before()
         self.inputs = self._process(self.input() + [self._name, self._args, self._kwargs])  # passes the class name and arguments as a secret background parameter
         self.outputs = self._process(self.output())
@@ -69,11 +70,12 @@ class Task():
         name_list = [para.name for para in para_list]
         if not len(set(name_list)) == len(name_list):
             raise Warning("Multiple Parameter have the same name! {}".format(name_list))
-        return {para.name: para for para in para_list}
+        print(convert_dict_to_namedtuple({para.name: para for para in para_list}))
+        return convert_dict_to_namedtuple({para.name: para for para in para_list})
 
     def _check(self, para_dic, old_values):
         changed = False
-        for para in para_dic.values():
+        for para in para_dic:
             if para.name in old_values:
                 old_value = old_values[para.name]
                 if para._log_value != old_value:
@@ -83,10 +85,9 @@ class Task():
         return changed
 
     def _rebuild(self, para_dic):
-        para_list = para_dic.values()
-        for para in para_list:
+        for para in para_dic:
             para._update()
-        return {para.name: para._log_value for para in para_list}
+        return {para.name: para._log_value for para in para_dic}
 
     def _run(self, log):
         """Check dependencies and outputs --> run task --> check success."""
