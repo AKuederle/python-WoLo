@@ -84,8 +84,6 @@ class Log():
         save_log = _recursive_iterate_log(self.log, lambda x: dict(x))
         json.dump(list(save_log), self._log_path.open("w"), sort_keys=True, indent=4)
 
-
-
     def simple_tree(self, formatter=lambda x: x.task_class):
         return list(_recursive_iterate_log(self.log, formatter))
 

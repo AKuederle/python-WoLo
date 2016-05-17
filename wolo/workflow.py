@@ -57,6 +57,7 @@ class Workflow():
         success, self.log.log = _run_tasks(self.tasklist, self.log.log)
         print(success)
 
+
 def _run_tasks(task_list, log, level=[]):
     """Run a list of tasks and return the log and success information.
 
@@ -111,6 +112,7 @@ def _run_tasks(task_list, log, level=[]):
         log = log[:i + 1]
 
     return success, log
+
 
 def _run_tasks_wrapper(subtasklist, task_log, sub_index):
     '''Needed to make the starmap function work with Multiprocess. Called function as to be importable --> Lambda is not possible.

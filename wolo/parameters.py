@@ -2,6 +2,7 @@ from pathlib import Path
 import inspect
 import hashlib
 
+
 class Parameter():
     """General Parameter class to register a Value as input or output parameter.
     name: The name the parameter is referenced with
@@ -23,6 +24,7 @@ class Parameter():
         It is called after the run, but before the Parameter values are saved, so that always the newest values are saved.
         """
         pass
+
 
 class File(Parameter):
     """Special Parameter Class for files. It uses the timestamp to check for updates.
@@ -60,6 +62,7 @@ class File(Parameter):
         self._mod_date = self._get_mod_date()
         super().__init__(name=self.name, value=self.path, _log_value=[str(self.path), self._mod_date])
 
+
 class Source(Parameter):
     """Special Parameter Class for sourcecode. It uses a hashvalue of the source to check if it changed.
     object: Python object you want to have the source from. inspect.getsource() is used for that.
@@ -83,6 +86,7 @@ class Source(Parameter):
     def changed(self):
         """Check if the source is updated in between runs"""
         return not self._hash == self._get_source()
+
 
 class Self(Source):
     """Special Parameter Class for the Sourcecode of the step definition. Can also be used to get the source of a class based on an instance.

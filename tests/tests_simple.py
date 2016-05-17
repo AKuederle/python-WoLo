@@ -7,6 +7,7 @@ from copy import deepcopy
 os.chdir(os.path.dirname(__file__))
 sys.path.insert(0, os.path.abspath('..'))
 
+
 import wolo.helper as helper
 class TestHelperFunctions(unittest.TestCase):
 
@@ -42,9 +43,9 @@ class TestHelperFunctions(unittest.TestCase):
         output = list(helper.cut_or_pad(test_master, test_slave, enum=True))
         self.assertEqual(exspected_output, output)
 
+
 import wolo.parameters as parameters
 import hashlib
-from pathlib import Path
 class TestParamterDefinitions(unittest.TestCase):
 
     def test_simple_parameter(self):
@@ -106,7 +107,6 @@ class TestParamterDefinitions(unittest.TestCase):
 
 import wolo.workflow as workflow
 import wolo.log as log
-
 
 class ExampleWorkflow(workflow.Workflow):
     def tasktree(self):
@@ -391,7 +391,7 @@ class TestWorkflow(unittest.TestCase):
         in_log.append(log.TaskLog(index=[2], task_class="2", last_run_success=True))
         in_log.append(log.TaskLog(index=[3], task_class="3", last_run_success=True))
         out_log = deepcopy(in_log)
-        out_log[1] = log.TaskLog(index=[1], task_class="1",  last_run_success=False)
+        out_log[1] = log.TaskLog(index=[1], task_class="1", last_run_success=False)
         success, task_log = workflow._run_tasks(tree, in_log)
         self.assertEqual(success, False)
         self.assertEqual(task_log, out_log)
@@ -455,6 +455,7 @@ test_flat_output = {"0": {"index": [0], "task_class": "0", "last_run_success": T
                     "1_p1_1": {"index": [1, "p1", 1], "task_class": "1_1_1", "last_run_success": True, "inputs": {}, "outputs": {}, "info": {}},
                     "2": {"index": [2], "task_class": "2", "last_run_success": True, "inputs": {}, "outputs": {}, "info": {}}}
 
+
 class TestFlatView(unittest.TestCase):
     def test_flat_view_repr(self):
         self.assertEqual(test_flat_view.__repr__(), test_flat_output)
@@ -479,22 +480,6 @@ class TestFlatView(unittest.TestCase):
         output = {"0": {"task_class": "0", "inputs_test": "testval"},
                   "1": {"task_class": "1"}}
         self.assertEqual(test_view.cols(["task_class"]).col_from_prop("inputs", "test").__repr__(), output)
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 
 if __name__ == '__main__':
     unittest.main(buffer=True)

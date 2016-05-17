@@ -28,6 +28,7 @@ def cut_or_pad(master, slave, enum=False):
         else:
             yield master[i], slave_val
 
+
 def convert_dict_to_namedtuple(dictionary):
     """taken from https://gist.github.com/href/1319371"""
     return namedtuple('TaskProperty', dictionary.keys())(**dictionary)

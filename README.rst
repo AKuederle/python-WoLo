@@ -22,7 +22,7 @@ But wait, there is more:
   - Source Code of the Step-configuration itself
 
 - Easily extend and adapt the functionality with a few lines of Python-code
-- Keep track and safe custom logs alongside with your workflow \*
+- Keep track and safe custom logs alongside with your workflow
 - Run meta-analysis on your workflow using the full power of Python \*
 
 \* not fully implemented yet
