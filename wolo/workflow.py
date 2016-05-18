@@ -52,10 +52,12 @@ class Workflow():
         """Empty method, that can be overwritten by user. Is called after the workflow ran."""
         pass
 
-    def run(self):
+    def run(self, return_result=False, _start_level=[]):
         """Run all the tasks returned by the self.tasktree() method."""
-        success, self.log.log = _run_tasks(self.tasklist, self.log.log)
+        success, self.log.log = _run_tasks(self.tasklist, self.log.log, level=_start_level)
         print(success)
+        if return_result is True:
+            return success, self.log.log
 
 
 def _run_tasks(task_list, log, level=[]):
@@ -73,7 +75,10 @@ def _run_tasks(task_list, log, level=[]):
         if not task_log:
             log.append(task_log)
 
-        if isinstance(step, (list, tuple)):  # checks if a step is actual a substep (list of steps)
+        if isinstance(step, Workflow):
+            task_success, new_task_log = step.run(return_result=True, _start_level=index)
+
+        elif isinstance(step, (list, tuple)):  # checks if a step is actual a substep (list of steps)
             subtasklist = step
             # checks if current log is a list (as needed for subtasks). if not creates an empty one
             if not isinstance(task_log, list):
@@ -89,7 +94,7 @@ def _run_tasks(task_list, log, level=[]):
                 task_success = all(list_success)
 
             else:
-                task_success, new_task_log = _run_tasks(subtasklist, task_log, index)
+                task_success, new_task_log = _run_tasks(subtasklist, task_log, level=index)
 
         else:
             step_class = type(step).__name__
