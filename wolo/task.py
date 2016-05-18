@@ -1,7 +1,7 @@
 import subprocess
 
 from .parameters import Parameter
-from .helper import convert_dict_to_namedtuple
+from .helper import convert_dict_to_namedtuple, convert_return
 
 
 class Task():
@@ -55,8 +55,8 @@ class Task():
         self._args = Parameter("args_", self.args)
         self._kwargs = Parameter("kwargs_", self.kwargs)
         self.before()
-        self.inputs = self._process(self.input() + [self._name, self._args, self._kwargs])  # passes the class name and arguments as a secret background parameter
-        self.outputs = self._process(self.output())
+        self.inputs = self._process(convert_return(self.input()) + [self._name, self._args, self._kwargs])  # passes the class name and arguments as a secret background parameter
+        self.outputs = self._process(convert_return(self.output()))
 
     def before(self):
         """Empty method, that can be overwritten by user. Is called on initialization of a task."""
@@ -102,8 +102,8 @@ class Task():
     def _rerun(self, log):
         print("rerunning Task...")
         self.report = self.action()
-        success = all(self.success())
-        log.info = self._rebuild(self._process(self.after()))
+        success = all(convert_return(self.success()))
+        log.info = self._rebuild(self._process(convert_return(self.after())))
         if success is True:
             # rebuild log. The log is only updated if the task ran successfully
             log.inputs = self._rebuild(self.inputs)

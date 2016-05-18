@@ -32,3 +32,16 @@ def cut_or_pad(master, slave, enum=False):
 def convert_dict_to_namedtuple(dictionary):
     """taken from https://gist.github.com/href/1319371"""
     return namedtuple('TaskProperty', dictionary.keys())(**dictionary)
+
+
+def convert_return(value):
+    """Returns a list containing the value if it is a single value.
+    Returns the value itself, if the value is a list
+    Returns the value convertet to a list if it is a tuples
+    """
+    if isinstance(value, tuple):
+        return list(value)
+    elif isinstance(value, list):
+        return value
+    else:
+        return [value]

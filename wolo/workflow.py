@@ -54,10 +54,13 @@ class Workflow():
 
     def run(self, return_result=False, _start_level=[]):
         """Run all the tasks returned by the self.tasktree() method."""
+        if all(isinstance(step, (list, tuple)) for step in self.tasklist):
+            self.tasklist = [self.tasklist]
         success, self.log.log = _run_tasks(self.tasklist, self.log.log, level=_start_level)
-        print(success)
         if return_result is True:
             return success, self.log.log
+        else:
+            print(success)
 
 
 def _run_tasks(task_list, log, level=[]):
@@ -68,9 +71,12 @@ def _run_tasks(task_list, log, level=[]):
     if not isinstance(log, list):
         log = []
     success = False
-
+    num_of_tasks = len(task_list)
     for i, step, task_log in cut_or_pad(task_list, log, enum=True):
-        index = level + [i]
+        if num_of_tasks == 1:
+            index = level
+        else:
+            index = level + [i]
 
         if not task_log:
             log.append(task_log)
