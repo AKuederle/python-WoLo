@@ -60,8 +60,7 @@ class Log():
             self._log = self._load()
         return self._log
 
-    @log.setter
-    def log(self, new_log):
+    def _set_log(self, new_log):
         self._log = new_log
         self._write()
 
@@ -98,7 +97,7 @@ class FlatView():
     - "last_run_success": True or False depending if the last time the run was successful
     - "index": index in tuple form. A string representation of index is already used as main object identifier
 
-    Note: The col emthods still passes all the information to the new Object. So the col selection can be changed from the same Object.
+    Note: The col methods still passes all the information to the new Object. So the col selection can be changed from the same Object.
 
     It is also possible to create a new column from a specific input or output using the .col_from_prop(prop, subprop) method using "inputs"
     or "outputs" as prop and the wanted parameter name as subprop.

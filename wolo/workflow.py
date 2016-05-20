@@ -56,7 +56,8 @@ class Workflow():
         """Run all the tasks returned by the self.tasktree() method."""
         if all(isinstance(step, (list, tuple)) for step in self.tasklist):
             self.tasklist = [self.tasklist]
-        success, self.log.log = _run_tasks(self.tasklist, self.log.log, level=_start_level)
+        success, new_log = _run_tasks(self.tasklist, self.log.log, level=_start_level)
+        self.log._set_log(new_log)
         if return_result is True:
             return success, self.log.log
         else:

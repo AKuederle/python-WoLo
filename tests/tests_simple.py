@@ -422,7 +422,7 @@ class TetsLogObject(unittest.TestCase):
     @mock.patch("wolo.log.Log._write")
     def test_log_writing(self, write_mock, cwd_mock):
         test_log = log.Log(name="test")
-        test_log.log = "test2"
+        test_log._set_log("test2")
         self.assertEqual(test_log._log, "test2")
         self.assertTrue(write_mock.called)
 
