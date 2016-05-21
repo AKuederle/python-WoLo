@@ -3,6 +3,8 @@ from multiprocessing.pool import Pool, ThreadPool
 from .helper import pretty_print_index, cut_or_pad
 from .log import Log, TaskLog
 
+num_of_threads = 4
+multicore = False
 
 class Workflow():
     """Provide a Scaffold class to build a workflow.
@@ -64,6 +66,11 @@ class Workflow():
             print(success)
 
 
+def set_Threads(num_of_threads=4, multicore=False):
+    num_of_threads = num_of_threads
+    multicore = multicore
+
+
 def _run_tasks(task_list, log, level=[]):
     """Run a list of tasks and return the log and success information.
 
@@ -95,7 +102,11 @@ def _run_tasks(task_list, log, level=[]):
             if all(isinstance(step, (list, tuple)) for step in subtasklist):
                 sub_index, subtasklist, task_log = zip(*cut_or_pad(subtasklist, task_log, enum=True))
                 sub_index = list((index + ["p" + str(i)] for i in sub_index))
-                with ThreadPool(4) as p:
+                if multicore is True:
+                    multi_runner = Pool
+                else:
+                    multi_runner = ThreadPool
+                with multi_runner(num_of_threads) as p:
                     list_success, list_log = zip(*p.starmap(_run_tasks_wrapper, zip(subtasklist, task_log, sub_index)))
                 new_task_log = list(list_log)
                 task_success = all(list_success)
