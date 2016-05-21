@@ -19,6 +19,9 @@ class Parameter():
         else:
             self._log_value = value
 
+    def __eq__(self, other):
+        return (isinstance(other, self.__class__) and self._log_value == other._log_value)
+
     def _update(self):
         """The update function is important for all Parameters, that can change during a run (like a outputfile).
         It is called after the run, but before the Parameter values are saved, so that always the newest values are saved.

@@ -29,9 +29,9 @@ def cut_or_pad(master, slave, enum=False):
             yield master[i], slave_val
 
 
-def convert_dict_to_namedtuple(dictionary):
+def convert_dict_to_namedtuple(dictionary, tuple_name):
     """taken from https://gist.github.com/href/1319371"""
-    return namedtuple('TaskProperty', dictionary.keys())(**dictionary)
+    return namedtuple(tuple_name, dictionary.keys())(**dictionary)
 
 
 def convert_return(value):

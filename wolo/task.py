@@ -66,7 +66,7 @@ class Task():
         name_list = [para.name for para in para_list]
         if not len(set(name_list)) == len(name_list):
             raise Warning("Multiple Parameter have the same name! {}".format(name_list))
-        return convert_dict_to_namedtuple({para.name: para for para in para_list})
+        return convert_dict_to_namedtuple({para.name: para for para in para_list}, 'TaskProperty')
 
     def _check(self, para_dic, old_values):
         changed = False
