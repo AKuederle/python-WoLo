@@ -1,6 +1,5 @@
 import subprocess
 
-from .parameters import Parameter
 from .helper import convert_dict_to_namedtuple, convert_return
 
 
@@ -51,11 +50,8 @@ class Task():
     def __init__(self, *args, **kwargs):
         self.args = args
         self.kwargs = kwargs
-        self._name = Parameter("name_", type(self).__name__)
-        self._args = Parameter("args_", self.args)
-        self._kwargs = Parameter("kwargs_", self.kwargs)
         self.before()
-        self.inputs = self._process(convert_return(self.input()) + [self._name, self._args, self._kwargs])  # passes the class name and arguments as a secret background parameter
+        self.inputs = self._process(convert_return(self.input()))  # passes the class name and arguments as a secret background parameter
         self.outputs = self._process(convert_return(self.output()))
 
     def before(self):
