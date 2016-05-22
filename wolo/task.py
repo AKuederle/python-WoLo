@@ -48,10 +48,10 @@ class Task():
     """
 
     def __init__(self, *args, **kwargs):
-        self.args = args
+        self.args = convert_return(args)
         self.kwargs = kwargs
         self.before()
-        self.inputs = self._process(convert_return(self.input()))  # passes the class name and arguments as a secret background parameter
+        self.inputs = self._process(convert_return(self.input()))
         self.outputs = self._process(convert_return(self.output()))
 
     def before(self):
@@ -72,9 +72,7 @@ class Task():
         changed = False
         for para in para_dic:
             if para.name in old_values:
-                old_value = old_values[para.name]
-                log_value = para._log_value if not isinstance(para._log_value, tuple) else list(para._log_value)
-                if log_value != old_value:
+                if para._log_value != old_values[para.name]:
                     changed = True
             else:
                 changed = True

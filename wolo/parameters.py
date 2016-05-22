@@ -18,6 +18,8 @@ class Parameter():
             self._log_value = _log_value
         else:
             self._log_value = value
+        if isinstance(self._log_value, tuple):
+            self._log_value = list(self._log_value)
 
     def __eq__(self, other):
         return (isinstance(other, self.__class__) and self._log_value == other._log_value)
