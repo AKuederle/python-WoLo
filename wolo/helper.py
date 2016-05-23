@@ -1,5 +1,3 @@
-from collections import namedtuple
-
 class TaskProperty():
     def __init__(self, dic):
         self.__dict__.update(dic)
@@ -13,6 +11,7 @@ class TaskProperty():
 
     def __eq__(self, other):
         return (isinstance(other, self.__class__) and self.__dict__ == other.__dict__)
+
 
 def pretty_print_index(index, style="brackets"):
     '''Turn the index into a formated string which is shown a output.
@@ -40,11 +39,6 @@ def cut_or_pad(master, slave, enum=False):
             yield i, master[i], slave_val
         else:
             yield master[i], slave_val
-
-
-def convert_dict_to_namedtuple(dictionary, tuple_name):
-    """taken from https://gist.github.com/href/1319371"""
-    return namedtuple(tuple_name, dictionary.keys())(**dictionary)
 
 
 def convert_return(value):
