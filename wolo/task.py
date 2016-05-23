@@ -1,4 +1,6 @@
 import subprocess
+import timeit
+import time
 
 from .helper import convert_dict_to_namedtuple, convert_return
 
@@ -89,13 +91,16 @@ class Task():
         outputs_changed = self._check(self.outputs, log.outputs)
         print("inputs changed: {}".format(inputs_changed))
         print("outputs changed: {}".format(outputs_changed))
-        if inputs_changed is True or outputs_changed is True or log.last_run_success is not True:
+        if inputs_changed is True or outputs_changed is True or log.last_run_success is not True:        
             log = self._rerun(log)
         return log
 
     def _rerun(self, log):
         print("rerunning Task...")
+        start_time = timeit.default_timer()
         self.report = self.action()
+        log.execution_time = timeit.default_timer() - start_time
+        log.last_run = time.ctime(int(time.time()))
         success = all(convert_return(self.success()))
         after = self.after()
         if after:

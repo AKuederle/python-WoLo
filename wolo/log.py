@@ -5,13 +5,15 @@ from .helper import pretty_print_index, convert_return
 
 
 class TaskLog():
-    def __init__(self, index, task_class, inputs={}, outputs={}, info={}, last_run_success=None):
+    def __init__(self, index, task_class, inputs={}, outputs={}, info={}, last_run_success=None, last_run=None, execution_time=None):
         self.index = index
         self.task_class = task_class
         self.inputs = inputs
         self.outputs = outputs
         self.last_run_success = last_run_success
         self.info = info
+        self.last_run = last_run
+        self.execution_time = execution_time
 
     def __getitem__(self, selection):
         return {key: self.__dict__[key] for key in selection}
