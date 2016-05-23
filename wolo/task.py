@@ -97,7 +97,9 @@ class Task():
         print("rerunning Task...")
         self.report = self.action()
         success = all(convert_return(self.success()))
-        log.info = self._rebuild(self._process(convert_return(self.after())))
+        after = self.after()
+        if after:
+            log.info = self._rebuild(self._process(convert_return(after)))
         if success is True:
             # rebuild log. The log is only updated if the task ran successfully
             log.inputs = self._rebuild(self.inputs)
