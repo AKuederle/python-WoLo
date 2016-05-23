@@ -79,7 +79,7 @@ class Source(Parameter):
         self.object = object
         self._hash = self._get_source()
         self.name = name
-        super().__init__(name=self.name, value=self.object, _log_value=self._hash)
+        super().__init__(name=self.name, value=self.object, _log_value=[self.object.__name__, self._hash])
 
     def _get_source(self):
         source = inspect.getsource(self.object)
