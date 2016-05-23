@@ -2,7 +2,7 @@ import subprocess
 import timeit
 import time
 
-from .helper import convert_dict_to_namedtuple, convert_return
+from .helper import TaskProperty, convert_return
 
 
 class Task():
@@ -68,7 +68,7 @@ class Task():
         name_list = [para.name for para in para_list]
         if not len(set(name_list)) == len(name_list):
             raise Warning("Multiple Parameter have the same name! {}".format(name_list))
-        return convert_dict_to_namedtuple({para.name: para for para in para_list}, 'TaskProperty')
+        return TaskProperty({para.name: para for para in para_list})
 
     def _check(self, para_dic, old_values):
         changed = False
@@ -91,7 +91,7 @@ class Task():
         outputs_changed = self._check(self.outputs, log.outputs)
         print("inputs changed: {}".format(inputs_changed))
         print("outputs changed: {}".format(outputs_changed))
-        if inputs_changed is True or outputs_changed is True or log.last_run_success is not True:        
+        if inputs_changed is True or outputs_changed is True or log.last_run_success is not True:
             log = self._rerun(log)
         return log
 

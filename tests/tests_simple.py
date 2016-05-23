@@ -45,6 +45,7 @@ class TestHelperFunctions(unittest.TestCase):
 
 
 import wolo.parameters as parameters
+from example_objects import test_func
 import hashlib
 class TestParamterDefinitions(unittest.TestCase):
 
@@ -86,17 +87,17 @@ class TestParamterDefinitions(unittest.TestCase):
         self.assertTrue(makedirs_mock.called)
         self.assertTrue(open_mock.called)
 
-    @mock.patch("wolo.parameters.inspect.getsource", side_effect=lambda x: x)
+    @mock.patch("wolo.parameters.inspect.getsource", return_value="this is a test")
     def test_source_parameter(self, getsource_mock):
-        test_object = parameters.Source("this is a test")
-        getsource_mock.assert_called_with("this is a test")
-        self.assertEqual(test_object.name, "this is a test")
-        self.assertEqual(test_object._log_value, hashlib.md5("this is a test".encode('utf-8')).hexdigest())
+        test_object = parameters.Source("test", test_func)
+        getsource_mock.assert_called_with(test_func)
+        self.assertEqual(test_object.name, "test")
+        self.assertEqual(test_object._log_value, ["test_func", hashlib.md5("this is a test".encode('utf-8')).hexdigest()])
 
-    @mock.patch("wolo.parameters.inspect.getsource", side_effect=lambda x: x)
+    @mock.patch("wolo.parameters.inspect.getsource", return_value="this is a test")
     def test_source_parameter_changed(self, getsource_mock):
-        test_object = parameters.Source("this is a test")
-        getsource_mock.side_effect = lambda x: "this is changed test"
+        test_object = parameters.Source("test", test_func)
+        getsource_mock.return_value = "this is changed test"
         self.assertTrue(test_object.changed())
 
     @mock.patch("wolo.parameters.Source.__init__")
@@ -363,7 +364,7 @@ class TestWorkflow(unittest.TestCase):
         self.assertEqual(success, True)
         self.assertEqual(task_log, out_log)
 
-    def test_run_tasks_parallel_tasks_crop_log(self):
+    def test_run_tasks_crop_log(self):
         tree = []
         tree.append(MockTask(True, "0"))
         tree.append(MockTask(True, "1"))
@@ -429,39 +430,14 @@ class TetsLogObject(unittest.TestCase):
     def test_tasklog_from_dict(self):
         self.assertEqual(log.TaskLog(index=[2], task_class="test"), log.TaskLog._from_dict({"index": [2], "task_class": "test"}))
 
-    # def test_load_json(self):
-    #     in_log = []
-    #     in_log.append(log.TaskLog(index=[0], task_class="0", last_run_success=True))
-    #     in_log.append(log.TaskLog(index=[1], task_class="1", last_run_success=True))
-    #     test_log = log.Log(name="test")
-    #     test_log._log = in_log
-    #     self.assertEqual(test_log._log, )
 
-example_log = []
-example_log.append(log.TaskLog(index=[0], task_class="0", last_run_success=True))
-sublog1 = []
-sublog1.append(log.TaskLog(index=[1, "p0", 0], task_class="1_0_0", last_run_success=True))
-sublog1.append(log.TaskLog(index=[1, "p0", 1], task_class="1_0_1", last_run_success=True))
-sublog2 = []
-sublog2.append(log.TaskLog(index=[1, "p1", 0], task_class="1_1_0", last_run_success=False))
-sublog2.append(log.TaskLog(index=[1, "p1", 1], task_class="1_1_1", last_run_success=True))
-example_log.append([sublog1, sublog2])
-example_log.append(log.TaskLog(index=[2], task_class="2", last_run_success=True))
-test_flat_view = log.FlatView(example_log)
-test_flat_output = {"0": {"index": [0], "task_class": "0", "last_run_success": True, "inputs": {}, "outputs": {}, "info": {}},
-                    "1_p0_0": {"index": [1, "p0", 0], "task_class": "1_0_0", "last_run_success": True, "inputs": {}, "outputs": {}, "info": {}},
-                    "1_p0_1": {"index": [1, "p0", 1], "task_class": "1_0_1", "last_run_success": True, "inputs": {}, "outputs": {}, "info": {}},
-                    "1_p1_0": {"index": [1, "p1", 0], "task_class": "1_1_0", "last_run_success": False, "inputs": {}, "outputs": {}, "info": {}},
-                    "1_p1_1": {"index": [1, "p1", 1], "task_class": "1_1_1", "last_run_success": True, "inputs": {}, "outputs": {}, "info": {}},
-                    "2": {"index": [2], "task_class": "2", "last_run_success": True, "inputs": {}, "outputs": {}, "info": {}}}
-
-
+from example_objects import example_flat_view, example_flat_output
 class TestFlatView(unittest.TestCase):
     def test_flat_view_repr(self):
-        self.assertEqual(test_flat_view.__repr__(), test_flat_output)
+        self.assertEqual(example_flat_view.__repr__(), example_flat_output)
 
     def test_flat_view_iter(self):
-        self.assertEqual(dict(test_flat_view), test_flat_output)
+        self.assertEqual(dict(example_flat_view), example_flat_output)
 
     def test_flat_view_col_selection(self):
         output = {"0": {"task_class": "0", "last_run_success": True},
@@ -470,7 +446,7 @@ class TestFlatView(unittest.TestCase):
                   "1_p1_0": {"task_class": "1_1_0", "last_run_success": False},
                   "1_p1_1": {"task_class": "1_1_1", "last_run_success": True},
                   "2": {"task_class": "2", "last_run_success": True}}
-        self.assertEqual(test_flat_view.cols(["task_class", "last_run_success"]).__repr__(), output)
+        self.assertEqual(example_flat_view.cols(["task_class", "last_run_success"]).__repr__(), output)
 
     def test_flat_view_col_from_prop(self):
         in_log = []
@@ -480,6 +456,31 @@ class TestFlatView(unittest.TestCase):
         output = {"0": {"task_class": "0", "inputs_test": "testval"},
                   "1": {"task_class": "1"}}
         self.assertEqual(test_view.cols(["task_class"]).col_from_prop("inputs", "test").__repr__(), output)
+
+
+from example_objects import ExampleTask
+from wolo.helper import TaskProperty
+test_task = ExampleTask("test_arg", kwarg="test_kwarg")
+class TestTaskClass(unittest.TestCase):
+    def test_task_init(self):
+        self.assertEqual(test_task.args, ["test_arg"])
+        self.assertEqual(test_task.kwargs, {"kwarg": "test_kwarg"})
+        self.assertEqual(test_task.inputs, TaskProperty({"test_input": parameters.Parameter("test_input", "test_arg")}))
+        self.assertEqual(test_task.outputs, TaskProperty({"test_output": parameters.Parameter("test_output", "test_kwarg")}))
+
+    def test_paramter_check(self):
+        self.assertFalse(test_task._check(test_task.outputs, {"test_output": "test_kwarg"}))
+        self.assertTrue(test_task._check(test_task.outputs, {"test_output": "output_value_changed"}))
+        self.assertTrue(test_task._check(test_task.outputs, {"test_output_changed": "output_value"}))
+
+    def test_list_parameter_check(self):
+        test_task_tuple = ExampleTask(("element1", "element2"), kwarg="test_kwarg")
+        test_task_list = ExampleTask(("element1", "element2"), kwarg="test_kwarg")
+        self.assertFalse(test_task_list._check(test_task_list.inputs, {"test_input": ["element1", "element2"]}))
+        self.assertFalse(test_task_tuple._check(test_task_tuple.inputs, {"test_input": ["element1", "element2"]}))
+
+    # def test_task_run(self):
+    #     test._tas
 
 if __name__ == '__main__':
     unittest.main(buffer=True)

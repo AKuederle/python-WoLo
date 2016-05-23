@@ -1,5 +1,18 @@
 from collections import namedtuple
 
+class TaskProperty():
+    def __init__(self, dic):
+        self.__dict__.update(dic)
+
+    def __getitem__(self, selection):
+        return {key: self.__dict__[key] for key in selection}
+
+    def __iter__(self):
+        for value in self.__dict__.values():
+            yield value
+
+    def __eq__(self, other):
+        return (isinstance(other, self.__class__) and self.__dict__ == other.__dict__)
 
 def pretty_print_index(index, style="brackets"):
     '''Turn the index into a formated string which is shown a output.
