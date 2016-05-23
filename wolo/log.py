@@ -133,11 +133,14 @@ class FlatView():
         new_log = {key: {in_key: val[in_key] for in_key in selection} for key, val in self._initial.items()}
         return FlatView(new_log, initial=self._initial, flatten=False)
 
-    def col_from_prop(self, prop, subprop):
+    def col_from_prop(self, prop, subprop, include_hash=False):
         for key, value in self._initial.items():
             if subprop in value[prop]:
                 val = self.log[key]
-                val.update({"_".join([prop, subprop]): value[prop][subprop]})
+                new_value = convert_return(value[prop][subprop])
+                if include_hash is False:
+                    new_value = new_value[0]
+                val.update({"_".join([prop, subprop]): new_value})
                 self.log[key] = val
         return FlatView(self.log, initial=self._initial, flatten=False)
 
