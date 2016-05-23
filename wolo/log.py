@@ -1,7 +1,7 @@
 from pathlib import Path
 import json
 
-from .helper import pretty_print_index
+from .helper import pretty_print_index, convert_return
 
 
 class TaskLog():
@@ -129,6 +129,7 @@ class FlatView():
 
     def cols(self, selection):
         """Take list of property name and return FlatView object whith just these columns"""
+        selection = convert_return(selection)
         new_log = {key: {in_key: val[in_key] for in_key in selection} for key, val in self._initial.items()}
         return FlatView(new_log, initial=self._initial, flatten=False)
 
