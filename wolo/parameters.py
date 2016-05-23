@@ -75,14 +75,11 @@ class Source(Parameter):
 
     Notes: The .changed() Method can be used to check if a the source is changed compared to the last run.
     """
-    def __init__(self, object, name=None):
+    def __init__(self, name, object):
         self.object = object
         self._hash = self._get_source()
-        if name:
-            self.name = name
-        else:
-            self.name = str(object)
-        super().__init__(name=self.name, value=None, _log_value=self._hash)
+        self.name = name
+        super().__init__(name=self.name, value=self.object, _log_value=self._hash)
 
     def _get_source(self):
         source = inspect.getsource(self.object)
