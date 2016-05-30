@@ -111,11 +111,21 @@ class PlotFlow(wolo.Workflow):
         return tree
 
 if __name__ == "__main__":
+    """Inside the Main function, we run the actual Workflow. Afterwards, we
+    retrieve the log and start manipulate it until we have the report structure
+    we want.
+
+    Note: We dont need the 'workflow.run()' if we just want to look at the log
+    from the last run.
+    """
     workflow = PlotFlow()
     workflow.run()
+    # Get the log and select the important Main Columns
     log = workflow.log.flat.cols(["task_class", "execution_time", "last_run"])
+    # Create new columns from nested properties
     log = log.col_from_prop("outputs", "outfile")
     log = log.col_from_prop("inputs", "function")
     log = log.col_from_prop("inputs", "parameter")
+    # Convert the log into a pandas array and display it
     log = log.to_pandas()
     print(log)
