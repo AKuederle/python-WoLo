@@ -23,6 +23,20 @@ But wait, there is more:
 
 - Easily extend and adapt the functionality with a few lines of Python-code
 - Keep track and safe custom logs alongside with your workflow
-- Run meta-analysis on your workflow using the full power of Python \*
+- Run meta-analysis on your workflow using the full power of Python
 
 \* not fully implemented yet
+
+Installation
+===========
+
+Wolo is avaible on PyPi. However, as it is still in alpha status, the package there will be probably outdated.
+
+    pip install wolo
+
+To get the the most up to date stable version, clone this Master and run the setup.py file
+
+Documentation
+=============
+
+I am working on it!!! Till then, check out the example folder.
