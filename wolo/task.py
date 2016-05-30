@@ -10,9 +10,9 @@ class Task():
 
     To create a task, create a new class with this class as parent.
     Your new class needs the following methods:
-        - input : method must return a list of wolo-parameters. Reformatted inputs are stored in self.inputs
-        - output : method must return a list of wolo-parameters. Reformatted outputs are stored in self.outputs
-        - action : method that contains the action that the task should perform. The optional return parameter is stored in self.report
+        - input : method must return a list of wolo-parameters. Reformatted inputs are stored in self.inputs and self.i
+        - output : method must return a list of wolo-parameters. Reformatted outputs are stored in self.outputs and self.o
+        - action : method that contains the action that the task should perform. The optional return parameter is stored in self.report and self.r
         - success : method must return True or a list which evaluate to True for the Task to be considered successful
     Furthermore, it can have the following methods:
         - before : method contains code that need to be run before everything else in the tasks.
@@ -54,7 +54,9 @@ class Task():
         self.kwargs = kwargs
         self.before()
         self.inputs = self._process(convert_return(self.input()))
+        self.i = self.inputs
         self.outputs = self._process(convert_return(self.output()))
+        self.o = self.outputs
 
     def before(self):
         """Empty method, that can be overwritten by user. Is called on initialization of a task."""
@@ -99,6 +101,7 @@ class Task():
         print("rerunning Task...")
         start_time = timeit.default_timer()
         self.report = self.action()
+        self.r = self.report
         log.execution_time = timeit.default_timer() - start_time
         log.last_run = time.ctime(int(time.time()))
         success = all(convert_return(self.success()))
