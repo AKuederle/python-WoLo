@@ -1,6 +1,7 @@
 import subprocess
 import timeit
 import time
+import traceback
 
 from .helper import TaskProperty, convert_return
 
@@ -52,10 +53,15 @@ class Task():
     def __init__(self, *args, **kwargs):
         self.args = convert_return(args)
         self.kwargs = kwargs
-        self.before()
-        self.inputs = self._process(convert_return(self.input()))
+        try:
+            self.before()
+            self.inputs = self._process(convert_return(self.input()))
+            self.outputs = self._process(convert_return(self.output()))
+        except:
+            traceback.print_exc()
+            self.inputs = None
+            self.outputs = None
         self.i = self.inputs
-        self.outputs = self._process(convert_return(self.output()))
         self.o = self.outputs
 
     def before(self):
@@ -74,6 +80,9 @@ class Task():
 
     def _check(self, para_dic, old_values):
         changed = False
+        if not para_dic:
+            # Add a log warning here about missing in or outputs
+            return True
         for para in para_dic:
             if para.name in old_values:
                 if para._log_value != old_values[para.name]:
@@ -83,6 +92,9 @@ class Task():
         return changed
 
     def _rebuild(self, para_dic):
+        if not para_dic:
+            # Add a log warning here about missing in or outputs
+            return {}
         for para in para_dic:
             para._update()
         return {para.name: para._log_value for para in para_dic}
@@ -100,12 +112,21 @@ class Task():
     def _rerun(self, log):
         print("rerunning Task...")
         start_time = timeit.default_timer()
-        self.report = self.action()
+        try:
+            self.report = self.action()
+            success = all(convert_return(self.success()))
+        except:
+            traceback.print_exc()
+            self.report = None
+            success = False
         self.r = self.report
         log.execution_time = timeit.default_timer() - start_time
         log.last_run = time.ctime(int(time.time()))
-        success = all(convert_return(self.success()))
-        after = self.after()
+        try:
+            after = self.after()
+        except:
+            traceback.print_exc()
+            after = None
         if after:
             log.info = self._rebuild(self._process(convert_return(after)))
         if success is True:
