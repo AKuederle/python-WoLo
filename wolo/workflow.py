@@ -55,8 +55,8 @@ class Workflow():
         pass
 
     def run(self, return_result=False, _start_level=[]):
-        self.before()
         """Run all the tasks returned by the self.tasktree() method."""
+        self.before()
         if all(isinstance(step, (list, tuple)) for step in self.tasklist):
             self.tasklist = [self.tasklist]
         success, new_log = _run_tasks(self.tasklist, self.log.log, level=_start_level)

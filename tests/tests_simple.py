@@ -130,7 +130,7 @@ class TestWorkflow(unittest.TestCase):
         test_workflow = ExampleWorkflow(name="test")
         self.assertEqual(test_workflow._name, "ExampleWorkflow_test")
         self.assertTrue(log_mock.called)
-        self.assertTrue(before_mock.called)
+
 
     def test_run_tasks_linear_empty_log(self):
         tree = []
