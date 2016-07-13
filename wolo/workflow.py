@@ -61,7 +61,7 @@ class Workflow():
             self.tasklist = [self.tasklist]
         success, new_log = _run_tasks(self.tasklist, self.log.log, level=_start_level)
         self.log._set_log(new_log)
-        self.afer()
+        self.after()
         if return_result is True:
             return success, self.log.log
         else:
